@@ -1,0 +1,626 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Token-smart GitHub Copilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap">
+<style>
+/* Layout: a timeline mind map. The core sits top-left, a time arrow runs right, and each of the eight steps drops into its own column. Read top-to-bottom, left-to-right. */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --soft:#f5f7fa; --line:#dde2ea; --line-strong:#b9c1cd;
+  --ink:#1b2130; --muted:#586174; --faint:#8a93a3;
+  --finops:#c2570c; --finops-soft:#fdf0e6;
+  --personal:#7c3aed; --personal-soft:#f3edfe;
+  --rvas:#b0173f; --rvas-soft:#fbe9ee;
+  --ghcp:#17663a; --ghcp-soft:#e7f3ec;
+  --foundry:#0b67c2; --foundry-soft:#e6f0fb;
+  --shared:#c0267a; --shared-soft:#fbe8f2;
+  --artifact:#15803d; --artifact-soft:#e5f6ea;
+  --teal:#0f766e; --teal-soft:#e2f4f2;
+  --file:#8a3ffc; --say-bg:#eaf2fd; --say-line:#9cc2ef;
+  --cmd-bg:#1d2433; --cmd-ink:#e8edf5; --cmd-dim:#8b97ab;
+  --focus:#0b67c2; --flash:#fde68a;
+  --shadow:0 1px 2px rgba(20,28,45,.07),0 2px 6px rgba(20,28,45,.05);
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-label:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161d; --surface:#1a2029; --soft:#202734; --line:#2d3544; --line-strong:#4a5466;
+  --ink:#e4e8ef; --muted:#a6afbe; --faint:#7d8798;
+  --finops:#f59a52; --finops-soft:#2c2018; --personal:#b79cfb; --personal-soft:#251e36;
+  --rvas:#f27a96; --rvas-soft:#311b22; --ghcp:#6fd49a; --ghcp-soft:#17281f;
+  --foundry:#6cb3f7; --foundry-soft:#16263a; --shared:#f383bd; --shared-soft:#321b28;
+  --artifact:#4ade80; --artifact-soft:#14291c; --teal:#5eead4; --teal-soft:#13302d;
+  --file:#c4a5ff; --say-bg:#172a42; --say-line:#2f5d93;
+  --cmd-bg:#0d1118; --cmd-ink:#e8edf5; --cmd-dim:#7d8798;
+  --focus:#6cb3f7; --flash:#6b5a12;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.25); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#12161d; --surface:#1a2029; --soft:#202734; --line:#2d3544; --line-strong:#4a5466;
+  --ink:#e4e8ef; --muted:#a6afbe; --faint:#7d8798;
+  --finops:#f59a52; --finops-soft:#2c2018; --personal:#b79cfb; --personal-soft:#251e36;
+  --rvas:#f27a96; --rvas-soft:#311b22; --ghcp:#6fd49a; --ghcp-soft:#17281f;
+  --foundry:#6cb3f7; --foundry-soft:#16263a; --shared:#f383bd; --shared-soft:#321b28;
+  --artifact:#4ade80; --artifact-soft:#14291c; --teal:#5eead4; --teal-soft:#13302d;
+  --file:#c4a5ff; --say-bg:#172a42; --say-line:#2f5d93;
+  --cmd-bg:#0d1118; --cmd-ink:#e8edf5; --cmd-dim:#7d8798;
+  --focus:#6cb3f7; --flash:#6b5a12;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.25); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px;line-height:1.45;padding-inline:16px;padding-block:14px;display:flex;flex-direction:column;gap:10px;min-height:100%;margin:0}
+h1,h2,p{margin:0}
+a{color:var(--foundry)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+.bar{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
+.bar h1{font-family:var(--font-label);font-size:clamp(22px,2.6vw,30px);font-weight:700;line-height:1.1}
+.bar .sub{color:var(--muted);font-size:13px;max-width:72ch}
+.grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lab{font-family:var(--font-label);font-size:11.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-right:2px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;font-size:12.5px;cursor:pointer;color:var(--muted)}
+.chip:hover{border-color:var(--line-strong);color:var(--ink)}
+.sp{flex:1}
+#q{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:4px 12px;font:inherit;font-size:13px;width:170px}
+
+/* inline marks used everywhere */
+.f{font-style:italic;font-weight:500;color:var(--file);white-space:nowrap}
+.f::before{content:"📄 ";font-style:normal}
+.ic{font-family:var(--font-mono);font-size:.92em;background:var(--soft);border:1px solid var(--line);border-radius:4px;padding:0 4px;white-space:nowrap}
+
+/* labels */
+.rel{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-label);font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.rel i{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none;border:1.5px solid currentColor}
+.rel.do{color:var(--foundry)} .rel.do i{background:currentColor}
+.rel.tool{color:var(--teal)} .rel.tool i{background:transparent;border-radius:2px}
+.rel.check{color:var(--artifact)} .rel.check i{background:linear-gradient(90deg,currentColor 50%,transparent 50%)}
+.rel.data{color:var(--rvas)} .rel.data i{background:currentColor;transform:rotate(45deg);border-radius:1px;width:8px;height:8px}
+
+/* viewport */
+.stage{display:flex;gap:12px;align-items:stretch;flex:1;min-height:0}
+.vp{position:relative;flex:1;min-width:0;height:calc(100vh - 110px);min-height:520px;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;cursor:grab;
+  background-image:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--line-strong) 40%,transparent) 1px,transparent 0);background-size:22px 22px;overscroll-behavior:contain}
+.vp.drag{cursor:grabbing;user-select:none}
+.sizer{position:relative}
+.canvas{position:absolute;left:0;top:0;transform-origin:0 0}
+.canvas svg{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+.zoom{position:fixed;right:28px;bottom:calc(env(safe-area-inset-bottom,0px) + 26px);display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;z-index:5;max-width:calc(100% - 40px)}
+.zoom button{min-width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-size:16px;box-shadow:var(--shadow)}
+.zoom button.w{padding:0 10px;font-size:12.5px}
+
+/* nodes */
+.nd{position:absolute;border-radius:10px;transition:opacity .15s}
+.nt{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.tt{font-weight:600;line-height:1.3;min-width:0}
+.nx{color:var(--muted);font-size:13px;margin-top:4px;line-height:1.5}
+.nm{display:flex;flex-wrap:wrap;gap:5px 8px;align-items:center;margin-top:8px}
+.nm:empty{display:none}
+.tog{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;font-size:11px;line-height:1;padding:3px 7px;cursor:pointer;color:var(--muted);font-family:var(--font-mono)}
+.lk{font-size:12px;font-weight:600;text-decoration:none;border:1px solid color-mix(in srgb,var(--foundry) 30%,var(--line));background:var(--surface);border-radius:5px;padding:1px 6px;white-space:nowrap}
+.lk::after{content:" ↗";font-weight:400}
+.jp{font-family:var(--font-label);font-size:11px;font-weight:600;border:1px solid color-mix(in srgb,var(--c) 40%,var(--line));background:var(--cs);color:var(--c);border-radius:5px;padding:0 6px;cursor:pointer;white-space:nowrap}
+
+.core{background:var(--ink);color:var(--surface);padding:18px 18px;border-radius:16px;box-shadow:var(--shadow)}
+.core .tt{font-family:var(--font-label);font-size:23px;font-weight:700}
+.core .nx{color:color-mix(in srgb,var(--surface) 78%,transparent);font-size:13px;margin-top:8px}
+.d1{background:var(--c);color:#fff;padding:12px 14px;box-shadow:var(--shadow)}
+.d1 .tt{font-family:var(--font-label);font-size:19px;font-weight:700}
+.d1 .nx{color:rgba(255,255,255,.9)}
+.d1 .ph{display:inline-block;font-family:var(--font-label);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:rgba(255,255,255,.18);border-radius:4px;padding:1px 6px;margin-bottom:6px}
+.d1 .tog{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
+.d1 .lk{background:#fff;color:var(--c);border-color:transparent}
+.d1 .ic{background:rgba(255,255,255,.15);border-color:transparent}
+.d1 .f{color:#fff}
+.d2{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--c);padding:10px 12px;box-shadow:var(--shadow)}
+.d2 .tt{font-size:14.5px}
+.dim{opacity:.2}
+.hit{outline:3px solid var(--flash);outline-offset:2px}
+.flash{animation:fl 1.6s ease}
+@keyframes fl{0%,60%{box-shadow:0 0 0 6px var(--flash)}100%{box-shadow:0 0 0 0 transparent}}
+
+/* phases on the time arrow */
+.phase{position:absolute;font-family:var(--font-label);font-size:14px;font-weight:700;color:var(--ink);background:var(--surface);border:1.5px solid var(--line-strong);border-radius:999px;padding:3px 12px;white-space:nowrap;transform:translateX(-50%)}
+
+/* HOW box */
+.how{margin-top:9px;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:8px 9px 9px;font-size:12.5px;line-height:1.45;display:flex;flex-direction:column;gap:5px}
+.how>.hh{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.how>.hh b{font-family:var(--font-label);font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin-right:2px}
+.wh{font-size:11.5px;font-weight:600;border-radius:999px;padding:1px 8px;white-space:nowrap}
+.wh.at{background:var(--teal-soft);color:var(--teal)}
+.wh.when{background:var(--finops-soft);color:var(--finops)}
+.hs{display:flex;gap:6px;align-items:flex-start}
+.hs .n{flex:none;width:17px;height:17px;border-radius:50%;background:var(--ink);color:var(--surface);font-family:var(--font-mono);font-size:10px;display:grid;place-items:center;margin-top:1px}
+.hs .b{min-width:0;flex:1;display:flex;flex-direction:column;gap:4px}
+.ind{margin-left:23px;display:flex;flex-direction:column;gap:4px}
+.cmd{position:relative;background:var(--cmd-bg);color:var(--cmd-ink);font-family:var(--font-mono);font-size:11.5px;border-radius:6px;padding:5px 30px 5px 8px;white-space:pre-wrap;word-break:break-word;direction:ltr;text-align:left}
+.cmd .pr{color:var(--cmd-dim);user-select:none}
+.cmd .cm{color:var(--cmd-dim)}
+.cp{position:absolute;right:4px;top:3px;border:0;background:transparent;color:var(--cmd-dim);cursor:pointer;font-size:12px;padding:1px 4px;border-radius:4px}
+.cp:hover{color:var(--cmd-ink);background:rgba(255,255,255,.1)}
+.code{font-family:var(--font-mono);font-size:11px;background:var(--surface);border:1px dashed var(--line-strong);border-radius:6px;padding:5px 8px;white-space:pre-wrap;word-break:break-word;color:var(--ink);direction:ltr;text-align:left}
+.say{background:var(--say-bg);border-left:3px solid var(--say-line);border-radius:6px;padding:4px 8px}
+.say::before{content:"💬 ";}
+.ui{font-weight:500}
+.ui::before{content:"🖱️ "}
+.ui .sep{color:var(--faint);padding:0 3px}
+.li{padding-left:12px;position:relative;color:var(--ink)}
+.li::before{content:"•";position:absolute;left:2px;color:var(--faint)}
+.d2.key{border:2px solid var(--c);border-left-width:6px;box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 14%,transparent),var(--shadow)}
+.star{display:inline-block;font-family:var(--font-label);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7a4b00;background:#ffd76a;border-radius:4px;padding:1px 7px;margin-bottom:5px}
+.d2:not(.key) .tt{font-weight:500}
+.d2:not(.key):not(.howopen) .how{display:none}
+body.allhow .d2 .how{display:flex!important}
+.ht{flex:none;border:1px solid var(--line);background:var(--soft);border-radius:999px;font-size:11px;font-weight:600;padding:2px 8px;cursor:pointer;color:var(--muted);white-space:nowrap}
+.ht:hover{color:var(--ink);border-color:var(--line-strong)}
+.d2.key .ht,body.allhow .ht{display:none}
+.zoom button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+
+/* legend */
+.legend{flex:none;width:260px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 14px 16px;display:flex;flex-direction:column;gap:18px;overflow-y:auto;max-height:calc(100vh - 110px)}
+.legend h2{font-family:var(--font-label);font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin:0 0 8px}
+.lp{font-family:var(--font-label);font-size:12.5px;font-weight:700;color:var(--muted);margin:8px 0 2px}
+.codes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+.codes button{width:100%;display:grid;grid-template-columns:26px 1fr;align-items:baseline;gap:4px;text-align:left;background:none;border:0;border-radius:6px;padding:3px 6px;cursor:pointer;font-size:13px;color:var(--ink)}
+.codes button:hover{background:var(--soft)}
+.codes b{font-family:var(--font-mono);font-size:12px;font-weight:600}
+.keys{display:flex;flex-direction:column;gap:8px;font-size:12.5px;color:var(--muted)}
+.keys .k{display:flex;flex-direction:column;gap:3px}
+.keys .k>span:first-child{color:var(--ink)}
+.keys .k>span.cmd{color:var(--cmd-ink)}
+.legend dl{margin:0;display:flex;flex-direction:column;gap:6px}
+.legend dd{margin:0 0 0 15px;font-size:12.5px;color:var(--muted)}
+@media (max-width:900px){.stage{flex-direction:column}.legend{width:auto;max-height:none}.vp{height:70vh}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="bar">
+  <div>
+    <h1>Token-smart GitHub Copilot · Check Point</h1>
+    <p class="sub">Eight steps, in the order you meet them: read left to right, then top to bottom. Each card says <b>what</b> to do; the <b>How</b> box says where, when and exactly what to run or write. Short on time? Do the <b>⭐ must-do</b> cards first. Drag to pan, Ctrl + scroll to zoom.</p>
+  </div>
+  <span class="sp"></span>
+  <div class="grp">
+    <label class="lab" for="q">Find</label>
+    <input id="q" type="search" placeholder="e.g. cache" autocomplete="off">
+    <span id="qInfo" class="lab" aria-live="polite"></span>
+    <span id="quick" style="display:contents"></span>
+  </div>
+</div>
+
+<div class="stage">
+<aside class="legend" aria-label="Map legend">
+  <section>
+    <h2>The eight steps</h2>
+    <div id="stepList"></div>
+  </section>
+  <section>
+    <h2>⭐ Start here: 9 must-dos</h2>
+    <ul class="codes" id="keyList"></ul>
+  </section>
+  <section>
+    <h2>How to read a How box</h2>
+    <div class="keys">
+      <div class="k"><span><span class="wh at">📍 Terminal</span> <span class="wh when">⏱ Weekly</span></span><span>Where you do it, and at which stage.</span></div>
+      <div class="k"><span><span class="f">.github/prompts/x.prompt.md</span></span><span>A file: create or edit it. Its content is the dashed box under it.</span></div>
+      <div class="k"><span class="cmd" style="padding-right:8px"><span class="pr">$ </span>npx ccusage@latest daily</span><span>A command to run. <span class="ic">$</span> = terminal, <span class="ic">&gt;</span> = inside Copilot CLI or chat. Click ⧉ to copy.</span></div>
+      <div class="k"><span class="say">Stop after 2 failed attempts.</span><span>Text to type into Copilot chat.</span></div>
+      <div class="k"><span class="ui">Settings<span class="sep">›</span>Rules</span><span>Clicks in a UI.</span></div>
+    </div>
+  </section>
+  <section>
+    <h2>Card labels</h2>
+    <dl>
+      <dt><span class="rel do"><i></i>Practice</span></dt><dd>How you work.</dd>
+      <dt><span class="rel tool"><i></i>Tool</span></dt><dd>What to run or query.</dd>
+      <dt><span class="rel check"><i></i>Gate</span></dt><dd>How you prove quality held.</dd>
+      <dt><span class="rel data"><i></i>Our data</span></dt><dd>From Check Point's August usage.</dd>
+    </dl>
+  </section>
+</aside>
+<div class="vp" id="vp">
+  <div class="sizer" id="sizer"><div class="canvas" id="canvas"><svg id="wires" aria-hidden="true"></svg></div></div>
+</div>
+</div>
+<div class="zoom" id="zoomCtl">
+  <button type="button" data-z="out" aria-label="Zoom out">−</button>
+  <button type="button" data-z="in" aria-label="Zoom in">+</button>
+  <button type="button" class="w" data-z="fit">Fit</button>
+  <button type="button" class="w" data-z="start">Start</button>
+  <button type="button" class="w" data-z="key" aria-pressed="false">⭐ Must-do only</button>
+  <button type="button" class="w" data-z="how">Open all How</button>
+  <button type="button" class="w" data-z="fold">Steps only</button>
+  <button type="button" class="w" data-z="open">Expand all</button>
+</div>
+
+<script>
+const L={
+ guide:["Token optimization guide","https://olivomarco.github.io/github-copilot-token-optimization/"],
+ chronicle:["Chronicle docs","https://docs.github.com/en/copilot/concepts/agents/copilot-cli/chronicle"],
+ pcu:["Personalized Copilot Usage","https://github.com/Iditbnaya/personalized-copilot-usage"],
+ aef:["AI Engineering Fluency","https://github.com/rajbos/github-copilot-token-usage"],
+ ccusage:["ccusage","https://github.com/ryoppippi/ccusage"],
+ metrics:["Usage metrics API","https://docs.github.com/en/rest/copilot/copilot-usage-metrics"],
+ budgets:["Copilot budgets","https://docs.github.com/en/copilot/concepts/billing-and-usage/organizations-and-enterprises/budgets"],
+ pricing:["Models and pricing","https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing"],
+ prompts:["Prompt files","https://code.visualstudio.com/docs/copilot/customization/prompt-files"],
+ instr:["Custom instructions","https://code.visualstudio.com/docs/copilot/customization/custom-instructions"],
+ agents:["Custom agents","https://code.visualstudio.com/docs/copilot/customization/custom-agents"],
+ hooks:["Copilot hooks","https://docs.github.com/en/copilot/concepts/agents/hooks"],
+ debug:["Debug view docs","https://code.visualstudio.com/learn/foundations/debugging-and-whats-happening-behind-the-scenes"],
+ rulesets:["Rulesets","https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets"],
+ gpt6:["GPT-6 Luna and Sol","https://github.blog/changelog/2026-09-22-openais-gpt-6-sol-and-gpt-6-luna-now-available/"],
+ hydra:["HydraFusion overview","https://www.marktechpost.com/2026/09/05/github-introduces-project-hydrafusion-runtime-multi-model-orchestration-that-builds-a-workflow-per-coding-task-in-copilot-cli/"]
+};
+const REL={do:"Practice",tool:"Tool",check:"Gate",data:"Our data"};
+const PH={p1:"🧭 Before you start",p2:"⚙️ During the task",p3:"✅ Before you merge",p4:"🔁 After, and ongoing"};
+/* d text: [[path]] = file, `x` = inline command.
+   how items: at · when · file · code (file content) · cmd [text, prompt] · say · ui (A › B) · txt · li · step (numbered, with nested items) */
+const N=(id,t,o={},c=[])=>({id,t,...o,c});
+
+const TREE=N("core","Token-smart GitHub Copilot · Check Point",{d:"Spend tokens where they buy quality. Measure, set up the repo once, pick and orchestrate models per task, keep the cache warm, gate every saving, and keep it running."},[
+
+ N("s1","📏 Measure the baseline",{ph:"p1",tone:"foundry",d:"`/usage` shows one session. Get per-request, per-day and per-team views."},[
+  N("s11","🔎 See what one request sends",{r:"tool",d:"In VS Code: the exact prompt, the context and the session's token total.",L:["debug"],how:[
+    ["at","VS Code"],["when","During any chat"],
+    ["step",[["ui","Command Palette › Developer: Open Agent Debug Panel"],["txt","Summary tab: model turns, total tokens"]]],
+    ["step",[["ui","Chat view ⋯ › Show Chat Debug View"],["txt","The exact prompt and context sent"]]],
+    ["txt","Not kept after a restart: note the numbers."]]}),
+  N("s12","📊 Tokens per model, per day",{key:1,r:"tool",d:"A Copilot skill that splits input, output, reasoning and cache read/write tokens, with estimated cost.",L:["pcu"],how:[
+    ["at","Copilot CLI or VS Code chat"],["when","Once a week"],
+    ["step",[["txt","Install the skill into"],["file","~/.copilot/skills/"]]],
+    ["step",[["txt","Ask for a report (exact wording in the README):"],["say","Show my Copilot token usage by model for the last 7 days."]]]]}),
+  N("s13","🧮 History across IDEs and CLI",{r:"tool",d:"Aggregate local logs per session, day and model.",L:["ccusage","aef"],how:[
+    ["at","Terminal"],["when","Once a week"],
+    ["cmd","npx ccusage@latest daily     # also: monthly, session","$"],
+    ["txt","IDE view: install AI Engineering Fluency from the VS Code, JetBrains or Visual Studio marketplace."]]}),
+  N("s14","🗄️ Query the session store",{r:"tool",d:"Copilot CLI keeps every session under [[~/.copilot/session-state/]], indexed in a local SQLite file. Build your own reports on it.",L:["chronicle"],how:[
+    ["at","Terminal"],["when","For custom reports"],
+    ["step",[["txt","Find the database"],["cmd","find ~/.copilot -name 'session-store.db'","$"]]],
+    ["step",[["txt","List its tables, then query tokens per session"],["cmd","sqlite3 <path>/session-store.db '.tables'","$"]]]]}),
+  N("s15","♻️ Track the cache-hit ratio",{r:"check",d:"A falling ratio means something keeps breaking the prompt prefix.",j:["s5"],how:[
+    ["when","Weekly, per developer"],
+    ["code","cache_read ÷ (cache_read + cache_write + input)"],
+    ["txt","Take the numbers from the skill or ccusage report."]]}),
+  N("s16","🏢 Team view (admins)",{r:"tool",d:"Spend is in AI credits, capped by budgets per cost center. The usage metrics API shows adoption per team, not tokens.",L:["budgets","metrics"],how:[
+    ["at","github.com · enterprise admin"],["when","Monthly"],
+    ["ui","Enterprise › Billing and licensing › Budgets"],
+    ["li","One budget per cost center, with alerts"],
+    ["li","Join credits with adoption → cost per active developer"]]})
+ ]),
+
+ N("s2","🧱 Set up the repo once",{ph:"p1",tone:"teal",d:"Context is a build artifact: scoped, versioned and small. Set it up once, change it by PR."},[
+  N("s21","📜 Layer the instructions",{key:1,r:"do",d:"Repo-wide rules in one short file. Area rules load only for matching paths.",L:["instr"],how:[
+    ["at","Repo"],["when","Once, then by PR"],
+    ["step",[["file",".github/copilot-instructions.md"],["txt","Short, repo-wide rules only"]]],
+    ["step",[["file",".github/instructions/api.instructions.md"],["code","---\napplyTo: 'src/api/**'\ndescription: 'Rules for API handlers'\n---\n- Validate every request body\n- Return typed errors"]]]]}),
+  N("s22","✂️ Ask for diffs, not prose",{r:"do",d:"Output tokens cost the most per token. Ask for patches, no narration.",L:["guide"],how:[
+    ["at","Repo"],["when","Once"],
+    ["file",".github/copilot-instructions.md"],
+    ["code","Return unified diffs only.\nNo explanations unless asked."]]}),
+  N("s23","🧑‍🔧 One agent per role",{r:"do",d:"A custom agent fixes the model and limits the tool set. Fewer tools means fewer tool definitions in every request.",L:["agents"],how:[
+    ["at","Repo"],["when","Once per role"],
+    ["file",".github/agents/backend.agent.md"],
+    ["code","---\nname: Backend\nmodel: <model your benchmark picked>\ntools: ['search/codebase', 'edit']\n---\nYou work on src/api only."],
+    ["txt","Pick it from the agent picker in Chat."]]}),
+  N("s24","🔭 Explore in a subagent",{r:"do",d:"Wide searches run in a subagent on a light model, so the main context gets the conclusion, not the crawl. A natural fit for Luna.",L:["agents","gpt6"],how:[
+    ["at","Repo, then VS Code chat"],["when","Once per repo"],
+    ["step",[["file",".github/agents/explorer.agent.md"],["code","---\nname: explorer\nmodel: <light model, e.g. GPT-6 Luna>\ntools: ['search/codebase']\n---\nSearch and summarise. 10 lines max."]]],
+    ["step",[["file",".github/agents/backend.agent.md"],["code","---\nagents: ['explorer']\n---"]]],
+    ["say","Use explorer to find where tokens are refreshed. Return 10 lines max."]]}),
+  N("s25","🧹 Feed failures, not logs",{r:"do",d:"Summary-mode test runs, `jq` projections and `rg` hits instead of whole files and full logs.",L:["hooks"],how:[
+    ["at","Terminal, or in a wrapper script"],["when","Whenever the agent runs tools"],
+    ["cmd","pytest -q --tb=line | tail -50","$"],
+    ["cmd","jq '.items[] | {id, status}' response.json","$"],
+    ["cmd","rg -n 'refreshToken' src/","$"],
+    ["txt","To enforce it in Copilot CLI and the cloud agent, use a hook (see docs)."]]})
+ ]),
+
+ N("s3","🎯 Choose the model",{ph:"p2",tone:"ghcp",d:"Classify the task; the profile decides the tier. Three tiers: light (e.g. GPT-6 Luna) · balanced (e.g. GPT-6 Sol) · top.",L:["pricing","gpt6"]},[
+  N("s31","🧭 Profile the task",{r:"do",d:"Four questions, ten seconds, before you start.",how:[
+    ["when","Before every task"],
+    ["li","Recurring or one-off?"],["li","Verifiable by tests, types or lint?"],["li","How much context does it need?"],["li","What breaks if it's wrong?"]]}),
+  N("s32","🔁 Recurring: benchmark once, pin",{key:1,r:"do",d:"Try 5–10 real samples on 2–3 tiers (e.g. Luna · Sol · top). Pin the cheapest one that passes your gate. Re-run when models or prices change.",L:["prompts"],how:[
+    ["at","Repo, then VS Code chat"],["when","The second time a task repeats"],
+    ["step",[["file",".github/prompts/unit-tests.prompt.md"],["code","---\nagent: agent\nmodel: <cheapest model that passed>\ntools: ['search/codebase']\n---\nWrite unit tests for ${file}."]]],
+    ["step",[["txt","Run it in chat"],["cmd","/unit-tests",">"]]]]}),
+  N("s33","⚡ One-off: start low, escalate on a signal",{key:1,r:"do",d:"Start with Auto or a light tier. Escalate on evidence: tests still failing, wrong files touched, a plan that contradicts the code.",how:[
+    ["at","Chat model picker"],["when","Task start"],
+    ["txt","Pick Auto or a light tier (e.g. GPT-6 Luna), then tell it when to stop:"],
+    ["say","If the tests still fail after 2 attempts, stop and summarise the failure."]]}),
+  N("s34","🧪 Verifiability sets the floor",{r:"do",d:"Verifiable work goes to a cheaper model with tests as the judge. Hard-to-verify work (design, security, concurrency) gets a stronger model or a reviewer.",j:["s43"],how:[
+    ["li","Verifiable → cheapest tier that passes the tests"],
+    ["li","Not verifiable → stronger tier, or a reviewer agent"]]}),
+  N("s35","🎚️ Raise effort before size",{r:"do",d:"A small task that needs deep thinking: raise reasoning effort first. Bulk mechanical edits: lower it.",how:[
+    ["at","Chat model picker"],["ui","Model › Reasoning effort"],["txt","Where the model supports it."]]}),
+  N("s36","🪜 Cap escalation",{r:"do",d:"One step up per task. If the top tier fails twice, split the task: a bigger model won't fix a vague problem.",how:[
+    ["file",".github/copilot-instructions.md"],
+    ["code","Escalate the model at most once per task.\nIf the top tier fails twice, propose a task breakdown."]]})
+ ]),
+
+ N("s4","🐉 Orchestrate: cascade and critique",{ph:"p2",tone:"shared",d:"Switch models between stages, with a small context per stage. HydraFusion does it for you in Copilot CLI.",L:["hydra"]},[
+  N("s41","🗺️ Plan expensive, execute cheap",{key:1,r:"do",d:"A strong model writes a short plan with acceptance criteria. A light model executes it. The plan is the contract.",how:[
+    ["when","Any change bigger than one file"],
+    ["step",[["txt","Chat 1 · strong model"],["say","Write plan.md: files, steps, acceptance criteria. No code."]]],
+    ["step",[["txt","Chat 2 · light model, e.g. GPT-6 Luna (new chat)"],["say","Implement plan.md step 1, then run the tests."]]]]}),
+  N("s42","🐉 HydraFusion in Copilot CLI",{r:"tool",d:"Research preview. Per task it picks Single, Cascade (cheap draft, gate, escalate) or Critique (a reviewer from another model family). You pay for each model's tokens.",L:["hydra"],how:[
+    ["at","Terminal · Copilot CLI"],["when","Once, to turn it on"],
+    ["cmd","copilot","$"],
+    ["cmd","/update\n/experimental on\n/model        # pick HydraFusion",">"]]}),
+  N("s43","👀 Critique across families",{r:"do",d:"A reviewer from another model family catches what the author model misses. It reads the diff, not the whole conversation.",L:["agents"],how:[
+    ["at","Repo, then VS Code chat"],["when","Before you open the PR"],
+    ["step",[["file",".github/agents/reviewer.agent.md"],["code","---\nname: Reviewer\nmodel: <a model from another family>\ntools: ['search/codebase']\n---\nReview the diff for correctness and risk."]]],
+    ["step",[["txt","Pick Reviewer, attach the diff:"],["say","Review this diff. Diff only."]]]]}),
+  N("s44","🚦 Cascade with a real gate",{r:"do",d:"Draft with a light tier (e.g. Luna). The gate is an exit code, not another model's opinion. Escalate only the failing part, with its error.",how:[
+    ["when","After each light-model draft"],
+    ["cmd","npm test     # or: pytest -q · tsc --noEmit","$"],
+    ["txt","Exit code ≠ 0 → send the stronger model only the failing test and its output."]]}),
+  N("s45","💡 Why switching here is cheap",{r:"do",d:"Each stage starts with a small context (a plan, a diff, a failing test), so a model change doesn't drag the history into a cold cache. Worked example: top model 5×, 70% of drafts pass → 1 + 0.3 × 5 = 2.5 instead of 5.",j:["s51"]}),
+  N("s46","📐 Prove it on your repos",{r:"check",d:"Vendor savings vary by task. Compare pass rate and cost per merged PR with and without orchestration.",j:["s64"]})
+ ]),
+
+ N("s5","🧊 Keep the cache warm",{ph:"p2",tone:"finops",d:"The cache key is the exact prompt prefix. Change it early and the whole history is re-written at write prices."},[
+  N("s51","🔒 Freeze the prefix mid-session",{key:1,r:"do",d:"Model, effort, skills, MCP tools and agent all sit in the prefix. Need to change one? Start a new chat with a short handoff.",L:["guide"],j:["s45"],how:[
+    ["when","Mid-session, before switching model or tools"],
+    ["step",[["txt","Open a new chat and paste a handoff (20 lines max):"],["code","Goal: …\nDecisions: …\nOpen items: …\nFiles: …"]]]]}),
+  N("s52","📌 Static first, dynamic last",{r:"do",d:"Nothing that changes per run in instruction files.",how:[
+    ["file",".github/copilot-instructions.md"],
+    ["li","✗ dates, git status, generated lists"],
+    ["li","✓ stable rules only"],
+    ["txt","Put changing details in your message instead."]]}),
+  N("s53","🤝 Agent handoffs carry the history",{r:"do",d:"A handoff to an agent on another model sends the whole conversation to a cold cache. For big contexts, hand off through [[plan.md]] in a new chat.",L:["agents"],j:["s41"]}),
+  N("s54","⏸️ Mind idle gaps",{r:"do",d:"Provider caches expire after minutes. Resuming a huge context after a break pays for the rewrite.",how:[
+    ["at","Copilot CLI"],["when","Back from a long break"],
+    ["cmd","/compact",">"],
+    ["txt","Or start a new chat with a summary."]]}),
+  N("s55","🗜️ Compact on purpose",{r:"do",d:"Compaction rewrites the prefix once. Do it at milestones, not every few turns.",how:[
+    ["when","At a milestone"],
+    ["step",[["txt","Say what to keep:"],["say","Keep: goal, decisions, failing tests, touched files."]]],
+    ["step",[["cmd","/compact",">"]]]]}),
+  N("s56","📈 Why it matters here",{r:"data",d:"August: cache writes were ~3% of tokens but ~32% of spend; cache reads ~96% of tokens. The waste is churn, not prompt length."})
+ ]),
+
+ N("s6","✅ Gate on quality",{ph:"p3",tone:"artifact",d:"Every saving is checked against the same bar. Cheaper and worse isn't a saving."},[
+  N("s61","✅ Executable acceptance",{key:1,r:"check",d:"Build, tests, typecheck, lint and required checks: the gate for any cheaper model, prompt or instruction change.",L:["rulesets"],how:[
+    ["at","GitHub repo · admin"],["when","Once"],
+    ["ui","Settings › Rules › Rulesets › Require status checks to pass"],
+    ["li","build · tests · typecheck · lint · CodeQL"]]}),
+  N("s62","🛑 Failure budget",{r:"check",d:"Unbounded retry loops make the biggest sessions.",how:[
+    ["file",".github/copilot-instructions.md"],
+    ["code","Max 2 attempts per failing test,\nthen stop and report."]]}),
+  N("s63","🏆 Golden task set",{r:"check",d:"10–20 real tasks with known-good results: regression tests for your AI setup.",how:[
+    ["at","Repo"],["when","On every model, instruction or skill change"],
+    ["step",[["file","ai-evals/tasks/*.md"],["txt","One task and its expected outcome per file"]]],
+    ["step",[["txt","Re-run them, record pass rate and tokens per task"]]]]}),
+  N("s64","💰 Cost per merged PR",{r:"check",d:"The unit that matters. A cheap PR that needs three follow-up fixes isn't cheap.",how:[
+    ["at","Terminal"],["when","Monthly, per team"],
+    ["cmd","gh pr list --state merged --search 'merged:>=2026-09-01' \\\n  --limit 1000 --json number | jq length","$"],
+    ["txt","Month's AI credits ÷ merged PRs. Track rework PRs too."]]})
+ ]),
+
+ N("s7","📚 Learn from history: Chronicle",{ph:"p4",tone:"personal",d:"Your Copilot CLI sessions are a dataset. Use them before you pay to rediscover something.",L:["chronicle"]},[
+  N("s71","🔍 Search before you re-investigate",{r:"tool",d:"Find what was already tried on a legacy area or a flaky bug, and pick up from there.",how:[
+    ["at","Copilot CLI"],["when","Before starting on a known problem"],
+    ["cmd","/chronicle search flaky login test",">"],
+    ["cmd","copilot --resume","$"]]}),
+  N("s72","💸 Find where tokens went",{key:1,r:"tool",d:"Sessions and patterns that burned the most tokens.",how:[
+    ["at","Copilot CLI"],["when","Weekly"],
+    ["cmd","/chronicle cost tips",">"]]}),
+  N("s73","🛠️ Turn repeats into instructions",{r:"tool",d:"Chronicle spots context you keep re-explaining. Land the fix as a reviewed PR, not a local tweak.",how:[
+    ["at","Copilot CLI, then GitHub"],["when","Monthly"],
+    ["step",[["cmd","/chronicle improve",">"]]],
+    ["step",[["txt","Copy the accepted suggestions into"],["file",".github/instructions/"]]],
+    ["step",[["txt","Open a PR"]]]]}),
+  N("s74","🔏 Data policy",{r:"tool",d:"Sessions sync to GitHub by default. Admins decide by policy; users can opt out.",how:[
+    ["txt","User: in the Copilot CLI config"],["code","\"remoteExport\": false"],
+    ["txt","Admin: org policy “Store local sessions in the Cloud”"]]})
+ ]),
+
+ N("s8","🔁 Run it as a system",{ph:"p4",tone:"rvas",d:"Without a rhythm, savings fade as models, prices and habits change."},[
+  N("s81","🗓️ Weekly: top 3 sessions",{key:1,r:"do",d:"Each team fixes one root cause from its three heaviest sessions.",j:["s12"],how:[
+    ["when","Weekly · each team"],
+    ["txt","Skill or ccusage report → sort by tokens → top 3 → fix one cause"]]}),
+  N("s82","📆 Monthly: setup review",{r:"do",d:"Merge useful suggestions, re-run the golden set, check the cache-hit ratio.",j:["s73","s63"],how:[
+    ["when","Monthly · team lead"],
+    ["cmd","/chronicle improve",">"],
+    ["txt","→ PR → re-run ai-evals → check the cache-hit ratio"]]}),
+  N("s83","🆕 On every model or price change",{r:"do",d:"Re-benchmark recurring tasks and update the pinned models.",j:["s32"],how:[
+    ["when","When the GitHub Changelog announces a model or price"],
+    ["txt","Re-run the benchmark → update `model:` in"],["file",".github/prompts/*.prompt.md"]]}),
+  N("s84","🧾 Instructions as code",{r:"do",d:"Instructions, prompt files, skills and agents live in the repo, reviewed in PRs, with owners.",how:[
+    ["file",".github/CODEOWNERS"],
+    ["code","/.github/instructions/  @platform-team\n/.github/agents/        @platform-team\n/.github/prompts/       @platform-team"]]}),
+  N("s85","👥 Who owns what",{r:"tool",d:"Developers: session habits. Platform team: defaults, shared skills, budgets. Product: where premium models are worth it."})
+ ])
+]);
+
+/* ---------- index ---------- */
+const BY={};
+(function idx(n,p,depth,tone){ n.p=p; n.depth=depth; n.tone=n.tone||tone; n.open=true; BY[n.id]=n; n.c.forEach(k=>idx(k,n,depth+1,n.tone)); })(TREE,null,0,"foundry");
+const STEPS=TREE.c;
+
+/* ---------- render ---------- */
+const canvas=document.getElementById("canvas"), svg=document.getElementById("wires");
+const COLW=350, CG=46, PAD=48, IND=26, GAP=12;
+const esc=t=>String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const fmt=t=>esc(t).replace(/\[\[(.+?)\]\]/g,'<span class="f">$1</span>').replace(/`([^`]+)`/g,'<span class="ic">$1</span>');
+const ui=t=>`<div class="ui">${esc(t).split(" › ").join('<span class="sep">›</span>')}</div>`;
+function cmd(t,pr){ const lines=esc(t).split("\n").map((l,i)=>{ const m=l.match(/^(.*?)(\s+#.*)?$/); return (pr?`<span class="pr">${pr} </span>`:"")+m[1]+(m[2]?`<span class="cm">${m[2]}</span>`:""); }).join("\n");
+  return `<div class="cmd" data-copy="${esc(t.replace(/\s+#.*$/gm,""))}">${lines}<button class="cp" type="button" aria-label="Copy command" title="Copy">⧉</button></div>`; }
+function item(it){
+  const [k,v,x]=it;
+  if(k==="file") return `<div><span class="f">${esc(v)}</span></div>`;
+  if(k==="code") return `<div class="ind"><div class="code">${esc(v)}</div></div>`;
+  if(k==="cmd") return cmd(v,x);
+  if(k==="say") return `<div class="say">${esc(v)}</div>`;
+  if(k==="ui") return ui(v);
+  if(k==="li") return `<div class="li">${fmt(v)}</div>`;
+  return `<div>${fmt(v)}</div>`;
+}
+function howHTML(h){
+  const at=h.filter(x=>x[0]==="at"), wh=h.filter(x=>x[0]==="when"), rest=h.filter(x=>x[0]!=="at"&&x[0]!=="when");
+  let head=`<div class="hh"><b>How</b>${at.map(x=>`<span class="wh at">📍 ${esc(x[1])}</span>`).join("")}${wh.map(x=>`<span class="wh when">⏱ ${esc(x[1])}</span>`).join("")}</div>`;
+  let n=0, body="";
+  rest.forEach(it=>{
+    if(it[0]==="step"){ n++; body+=`<div class="hs"><span class="n">${n}</span><div class="b">${it[1].map(item).join("")}</div></div>`; }
+    else if(it[0]==="file"){ body+=item(it); }
+    else body+=item(it);
+  });
+  return `<div class="how">${head}${body}</div>`;
+}
+const linkOf=x=>L[x];
+const label=id=>BY[id].t.replace(/^\S+\s/,"").replace(/^(.{26}).+/,"$1…");
+function build(n){
+  const el=document.createElement("div");
+  el.className="nd "+(n.depth===0?"core":"d"+Math.min(n.depth,2))+" t-"+n.tone;
+  el.style.setProperty("--c",`var(--${n.tone})`); el.style.setProperty("--cs",`var(--${n.tone}-soft)`);
+  el.id="n-"+n.id; el.style.width=(n.depth===0?COLW:n.depth===1?COLW:COLW-IND)+"px";
+  if(n.key) el.classList.add("key");
+  const ht=n.depth===2&&!n.key&&n.how?`<button class="ht" type="button" data-how="${n.id}" aria-expanded="false">How ▸</button>`:"";
+  const tog=n.depth===1?`<button class="tog" type="button" data-tog="${n.id}" aria-expanded="true" aria-label="Fold ${esc(n.t)}">−</button>`:"";
+  let meta="";
+  if(n.r) meta+=`<span class="rel ${n.r}"><i></i>${REL[n.r]}</span>`;
+  (n.j||[]).forEach(id=>{ const tg=BY[id]; if(!tg) return; meta+=`<button type="button" class="jp" style="--c:var(--${tg.tone});--cs:var(--${tg.tone}-soft)" data-jump="${id}">→ ${esc(label(id))}</button>`; });
+  (n.L||[]).forEach(x=>{ const [t,u]=linkOf(x); meta+=`<a class="lk" href="${u}" target="_blank" rel="noreferrer">${t}</a>`; });
+  const num=n.depth===1?`${STEPS.indexOf(n)+1} · `:"";
+  el.innerHTML=`${n.key?'<span class="star">⭐ Must-do</span>':""}${n.ph?`<span class="ph">${PH[n.ph]}</span>`:""}<div class="nt"><span class="tt">${num}${esc(n.t)}</span>${tog}${ht}</div>${n.d?`<div class="nx">${fmt(n.d)}</div>`:""}${n.how?howHTML(n.how):""}<div class="nm">${meta}</div>`;
+  canvas.appendChild(el); n.el=el;
+  n.c.forEach(build);
+}
+build(TREE);
+// steps list in legend, grouped by phase
+(function(){ let html="", last="";
+  STEPS.forEach((s,i)=>{ if(s.ph!==last){ if(last) html+="</ul>"; html+=`<div class="lp">${PH[s.ph]}</div><ul class="codes">`; last=s.ph; }
+    html+=`<li><button type="button" data-jump="${s.id}"><b style="color:var(--${s.tone})">${i+1}</b>${esc(s.t.replace(/^\S+\s/,""))}</button></li>`; });
+  document.getElementById("stepList").innerHTML=html+"</ul>"; })();
+document.getElementById("keyList").innerHTML=Object.values(BY).filter(n=>n.key).map(n=>`<li><button type="button" data-jump="${n.id}"><b style="color:var(--${n.tone})">${STEPS.indexOf(n.p)+1}</b>${esc(n.t)}</button></li>`).join("");
+// phase pills
+const phaseEls={};
+Object.keys(PH).forEach(k=>{ const d=document.createElement("div"); d.className="phase"; d.textContent=PH[k]; canvas.appendChild(d); phaseEls[k]=d; });
+
+/* ---------- layout ---------- */
+let BW=0,BH=0,trunkY=0,KEYONLY=false;
+const colX=i=>PAD+i*(COLW+CG);
+function layout(){
+  STEPS.forEach(s=>s.c.forEach(c=>c.el.style.display=(s.open&&(!KEYONLY||c.key))?"":"none"));
+  Object.values(BY).forEach(n=>{ n.h=n.el.offsetHeight; n.w=n.el.offsetWidth; });
+  TREE.x=PAD; TREE.y=PAD;
+  trunkY=TREE.y+TREE.h+78;
+  const headY=trunkY+40;
+  let maxY=0;
+  STEPS.forEach((s,i)=>{ s.x=colX(i); s.y=headY; let y=s.y+s.h+16;
+    s.vis=s.open?s.c.filter(c=>!KEYONLY||c.key):[];
+    s.vis.forEach(c=>{ c.x=s.x+IND; c.y=y; y+=c.h+GAP; });
+    maxY=Math.max(maxY,y); });
+  // phases: centred over their columns, above the trunk
+  Object.keys(PH).forEach(k=>{ const cols=STEPS.map((s,i)=>s.ph===k?i:-1).filter(i=>i>=0);
+    const a=colX(cols[0]), b=colX(cols[cols.length-1])+COLW; const el=phaseEls[k];
+    el.style.left=((a+b)/2)+"px"; el.style.top=(trunkY-38)+"px"; });
+  BW=colX(STEPS.length-1)+COLW+PAD+30; BH=maxY+PAD;
+  Object.values(BY).forEach(n=>{ n.el.style.left=n.x+"px"; n.el.style.top=n.y+"px"; });
+  canvas.style.width=BW+"px"; canvas.style.height=BH+"px";
+  drawWires(); applyZoom();
+}
+function drawWires(){
+  svg.setAttribute("width",BW); svg.setAttribute("height",BH);
+  const cx=TREE.x+TREE.w/2, endX=colX(STEPS.length-1)+COLW/2;
+  let o=`<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--line-strong)"/></marker></defs>`;
+  o+=`<path d="M${cx},${TREE.y+TREE.h} V${trunkY}" stroke="var(--ink)" stroke-width="4" fill="none"/>`;
+  o+=`<path d="M${cx},${trunkY} H${endX+38}" stroke="var(--line-strong)" stroke-width="4" fill="none" marker-end="url(#ah)"/>`;
+  o+=`<text x="${endX+30}" y="${trunkY+26}" font-family="IBM Plex Sans Condensed, sans-serif" font-size="13" font-weight="600" fill="var(--faint)" text-anchor="end">time →</text>`;
+  // phase separators on the trunk
+  for(let i=1;i<STEPS.length;i++) if(STEPS[i].ph!==STEPS[i-1].ph){ const x=colX(i)-CG/2; o+=`<path d="M${x},${trunkY-10} V${trunkY+10}" stroke="var(--line-strong)" stroke-width="2"/>`; }
+  STEPS.forEach(s=>{
+    const x=s.x+COLW/2;
+    o+=`<circle cx="${x}" cy="${trunkY}" r="6" fill="var(--${s.tone})"/>`;
+    o+=`<path d="M${x},${trunkY} V${s.y}" stroke="var(--${s.tone})" stroke-width="3" fill="none"/>`;
+    if(!s.vis||!s.vis.length) return;
+    const sx=s.x+12, last=s.vis[s.vis.length-1];
+    o+=`<path d="M${sx},${s.y+s.h} V${last.y+20}" stroke="var(--${s.tone})" stroke-width="2" stroke-opacity=".6" fill="none"/>`;
+    s.vis.forEach(c=>{ o+=`<path d="M${sx},${c.y+20} H${c.x}" stroke="var(--${s.tone})" stroke-width="2" stroke-opacity=".6" fill="none"/>`; });
+  });
+  svg.innerHTML=o;
+}
+
+/* ---------- zoom & pan ---------- */
+const vp=document.getElementById("vp"), sizer=document.getElementById("sizer");
+let Z=0.8;
+function applyZoom(){ canvas.style.transform=`scale(${Z})`; sizer.style.width=BW*Z+"px"; sizer.style.height=BH*Z+"px"; }
+function zoomAt(nz,cx,cy){
+  nz=Math.max(.15,Math.min(1.6,nz));
+  const r=vp.getBoundingClientRect(); cx=cx??r.width/2; cy=cy??r.height/2;
+  const wx=(vp.scrollLeft+cx)/Z, wy=(vp.scrollTop+cy)/Z;
+  Z=nz; applyZoom(); vp.scrollLeft=wx*Z-cx; vp.scrollTop=wy*Z-cy;
+}
+function centerOn(n,smooth){
+  const r=vp.getBoundingClientRect();
+  vp.scrollTo({left:(n.x+n.w/2)*Z-r.width/2,top:Math.max(0,(n.y-30)*Z),behavior:smooth?"smooth":"auto"});
+}
+function start(){ vp.scrollTo({left:0,top:0,behavior:"smooth"}); }
+function fit(){ const r=vp.getBoundingClientRect(); Z=Math.max(.15,Math.min(1,Math.min((r.width-20)/BW,(r.height-20)/BH))); applyZoom(); vp.scrollTo(0,0); }
+vp.addEventListener("wheel",e=>{ if(!e.ctrlKey&&!e.metaKey) return; e.preventDefault(); const r=vp.getBoundingClientRect(); zoomAt(Z*(e.deltaY<0?1.12:1/1.12),e.clientX-r.left,e.clientY-r.top); },{passive:false});
+let drag=null;
+vp.addEventListener("pointerdown",e=>{ if(e.pointerType!=="mouse"||e.button!==0||e.target.closest("a,button,.cmd,.code,.say")) return; drag={x:e.clientX,y:e.clientY,l:vp.scrollLeft,t:vp.scrollTop}; vp.classList.add("drag"); vp.setPointerCapture(e.pointerId); });
+vp.addEventListener("pointermove",e=>{ if(!drag) return; vp.scrollLeft=drag.l-(e.clientX-drag.x); vp.scrollTop=drag.t-(e.clientY-drag.y); });
+const endDrag=()=>{ drag=null; vp.classList.remove("drag"); };
+vp.addEventListener("pointerup",endDrag); vp.addEventListener("pointercancel",endDrag);
+
+document.getElementById("zoomCtl").addEventListener("click",e=>{
+  const b=e.target.closest("[data-z]"); if(!b) return; const z=b.dataset.z;
+  if(z==="in") zoomAt(Z*1.2); else if(z==="out") zoomAt(Z/1.2); else if(z==="fit") fit(); else if(z==="start") start();
+  else if(z==="how"){ const on=document.body.classList.toggle("allhow"); b.textContent=on?"Close How boxes":"Open all How"; layout(); }
+  else if(z==="key"){ KEYONLY=!KEYONLY; b.setAttribute("aria-pressed",KEYONLY); layout(); }
+  else { const open=z==="open"; STEPS.forEach(s=>{ s.open=open; syncTog(s); }); layout(); if(!open) fit(); }
+});
+
+/* ---------- fold, jump, copy ---------- */
+function syncTog(n){ const t=n.el.querySelector(".tog"); if(!t) return; t.textContent=n.open?"−":"+"+n.c.length; t.setAttribute("aria-expanded",n.open); }
+canvas.addEventListener("click",e=>{
+  const cp=e.target.closest(".cp");
+  if(cp){ const t=cp.parentElement.dataset.copy.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").trim();
+    try{ navigator.clipboard.writeText(t).then(()=>{cp.textContent="✓"; setTimeout(()=>cp.textContent="⧉",1200);},()=>{}); }catch(_){} return; }
+  const h=e.target.closest("[data-how]");
+  if(h){ const n=BY[h.dataset.how]; const o=n.el.classList.toggle("howopen"); h.textContent=o?"How ▾":"How ▸"; h.setAttribute("aria-expanded",o); layout(); return; }
+  const t=e.target.closest("[data-tog]");
+  if(t){ const n=BY[t.dataset.tog]; n.open=!n.open; syncTog(n); layout(); return; }
+  const j=e.target.closest("[data-jump]"); if(j) jump(j.dataset.jump);
+});
+function jump(id){
+  const n=BY[id]; if(!n) return;
+  if(n.p&&n.p.depth===1&&(!n.p.open||(KEYONLY&&!n.key))){ n.p.open=true; syncTog(n.p); if(KEYONLY&&!n.key){ KEYONLY=false; document.querySelector('[data-z="key"]').setAttribute("aria-pressed","false"); } layout(); }
+  centerOn(n,true);
+  n.el.classList.remove("flash"); void n.el.offsetWidth; n.el.classList.add("flash");
+}
+document.querySelector(".legend").addEventListener("click",e=>{ const j=e.target.closest("[data-jump]"); if(j) jump(j.dataset.jump); });
+
+/* ---------- search ---------- */
+const q=document.getElementById("q"), qInfo=document.getElementById("qInfo");
+let hits=[], hi=0;
+function search(term){
+  Object.values(BY).forEach(n=>n.el.classList.remove("hit"));
+  term=term.trim().toLowerCase(); hits=[]; hi=0;
+  if(!term){ qInfo.textContent=""; return; }
+  hits=Object.values(BY).filter(n=>n.depth>0&&n.el.textContent.toLowerCase().includes(term));
+  hits.forEach(n=>n.el.classList.add("hit"));
+  qInfo.textContent=hits.length?`1 / ${hits.length}`:"No match";
+  if(hits.length) jump(hits[0].id);
+}
+q.addEventListener("input",()=>search(q.value));
+q.addEventListener("keydown",e=>{ if(e.key==="Enter"&&hits.length){ hi=(hi+1)%hits.length; qInfo.textContent=`${hi+1} / ${hits.length}`; jump(hits[hi].id); } });
+const quick=document.getElementById("quick");
+["cache","prompt.md","/chronicle","HydraFusion","golden"].forEach(t=>{
+  const b=document.createElement("button"); b.type="button"; b.className="chip"; b.textContent=t;
+  b.addEventListener("click",()=>{ q.value=t; search(t); }); quick.appendChild(b);
+});
+
+/* ---------- boot ---------- */
+let booted=false;
+function boot(){ if(booted) return; booted=true; layout(); const r=vp.getBoundingClientRect(); Z=r.width<700?0.55:0.78; applyZoom(); vp.scrollTo(0,0); }
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(boot,boot); else boot();
+setTimeout(boot,1500);
+let rt; window.addEventListener("resize",()=>{ clearTimeout(rt); rt=setTimeout(layout,150); });
+</script>
+
+</body></html>
