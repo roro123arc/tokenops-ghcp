@@ -3,491 +3,553 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style>:root{color-scheme:light}html{scroll-padding-top:16px}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
 <title>Copilot Workflows for DevOps</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
-/* Layout: hero + "at a glance" tile grid, then one card per topic. Each card has a colored header band
-   (its own hue), an "In short" column and a "Rules of thumb" column side by side. */
+/* Layout: engineering-doc style. Sticky contents rail, one reading column, code-first.
+   Each topic: short mechanics, then config/code, then a terse "Do / Avoid" list. */
 :root{
-  --bg:#f3f5f8; --surface:#ffffff; --sunk:#eef1f6; --fg:#141b26; --muted:#5a6678; --line:#dce2ea;
-  --c-blue:#2563eb; --c-teal:#0d9488; --c-violet:#7c3aed; --c-amber:#c2410c; --c-rose:#be185d; --c-green:#15803d; --c-slate:#475569;
-  --tint:.09;
-  --warn:#9a5b00; --warn-soft:#fdf1dc; --bad:#b4232c; --bad-soft:#fbe7e8;
-  --code-bg:#0f1722; --code-fg:#dbe4f0; --code-key:#8ab4ff; --code-str:#9fd8b4; --code-cmt:#8a98ad;
-  --f-display:"Bricolage Grotesque","IBM Plex Sans","Segoe UI",Arial,sans-serif;
+  --bg:#fbfbfa; --surface:#ffffff; --sunk:#f1f2f0; --fg:#1b1f24; --muted:#5d6670; --line:#e1e3e0;
+  --accent:#0b6bcb; --do:#16794a; --avoid:#b42b2b; --warn:#8a5a00; --warn-bg:#fbf3e2;
+  --code-bg:#14181d; --code-fg:#dde3ea; --k:#8cb4ff; --s:#a7d8a5; --n:#e7b86a; --cm:#7d8794;
   --f-body:"IBM Plex Sans","Segoe UI",Arial,sans-serif;
-  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0c1118; --surface:#141b25; --sunk:#1a2330; --fg:#e6ebf2; --muted:#9daabb; --line:#283342;
-  --c-blue:#7aa8ff; --c-teal:#4fd1c0; --c-violet:#b794ff; --c-amber:#ffa36b; --c-rose:#ff85b8; --c-green:#6ee39a; --c-slate:#a6b4c8;
-  --tint:.14;
-  --warn:#f0b357; --warn-soft:#352612; --bad:#ff7d83; --bad-soft:#3a1a1d;
-  --code-bg:#080c12; color-scheme:dark }}
+  --bg:#111417; --surface:#171b1f; --sunk:#1d2227; --fg:#e3e7eb; --muted:#9aa4ae; --line:#2b3138;
+  --accent:#6aa8ff; --do:#5ccf8f; --avoid:#ff8080; --warn:#f0bd5e; --warn-bg:#2d2414;
+  --code-bg:#0b0e11; color-scheme:dark }}
 :root[data-theme="dark"]{
-  --bg:#0c1118; --surface:#141b25; --sunk:#1a2330; --fg:#e6ebf2; --muted:#9daabb; --line:#283342;
-  --c-blue:#7aa8ff; --c-teal:#4fd1c0; --c-violet:#b794ff; --c-amber:#ffa36b; --c-rose:#ff85b8; --c-green:#6ee39a; --c-slate:#a6b4c8;
-  --tint:.14;
-  --warn:#f0b357; --warn-soft:#352612; --bad:#ff7d83; --bad-soft:#3a1a1d;
-  --code-bg:#080c12; color-scheme:dark }
+  --bg:#111417; --surface:#171b1f; --sunk:#1d2227; --fg:#e3e7eb; --muted:#9aa4ae; --line:#2b3138;
+  --accent:#6aa8ff; --do:#5ccf8f; --avoid:#ff8080; --warn:#f0bd5e; --warn-bg:#2d2414;
+  --code-bg:#0b0e11; color-scheme:dark }
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6;margin:0}
-.page{max-width:1120px;margin:0 auto;padding-inline:18px;padding-block:24px 64px}
-a{color:var(--c-blue)}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15.5px;line-height:1.62;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:28px 72px;display:grid;grid-template-columns:220px minmax(0,1fr);gap:44px}
+@media (max-width:920px){.wrap{grid-template-columns:minmax(0,1fr);gap:14px}}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 18px);align-self:start;font-size:13.5px}
+@media (max-width:920px){nav.toc{position:static}}
+.toc .t{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+.toc a{display:block;padding:4px 8px;border-left:2px solid transparent;color:var(--fg);text-decoration:none}
+.toc a:hover,.toc a:focus-visible{border-color:var(--accent);background:var(--sunk);outline:none}
+.toc .sub{padding-left:18px;font-size:12.5px;color:var(--muted)}
+.theme{margin-top:14px;font:500 12.5px var(--f-body);background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px 9px;cursor:pointer}
+main{min-width:0}
+.top{border-bottom:1px solid var(--line);padding-bottom:22px}
+.crumb{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+h1{font-size:clamp(28px,3.8vw,38px);line-height:1.15;margin:8px 0 10px;letter-spacing:-.01em;text-wrap:balance}
+.lede{color:var(--muted);max-width:72ch;margin:0}
+.status{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:14px;font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+.status b{color:var(--warn);font-weight:600}
+section{padding-top:34px}
+h2{font-size:23px;margin:0 0 4px;padding-top:6px;border-top:1px solid var(--line);padding-top:26px;text-wrap:balance}
+section:first-of-type h2{border-top:0;padding-top:0}
+.num{font-family:var(--f-mono);color:var(--muted);font-weight:500;margin-right:8px}
+h3{font-size:16.5px;margin:24px 0 6px}
+.asked{font-size:14px;color:var(--muted);margin:2px 0 12px;font-style:italic}
+p,li{max-width:76ch}
+p{margin:8px 0}
+ul,ol{padding-left:20px;margin:8px 0}
+li{margin-block:3px}
+a{color:var(--accent)}
 code{font-family:var(--f-mono);font-size:.86em;background:var(--sunk);padding:1px 5px;border-radius:4px}
-p,li{max-width:72ch}
-
-/* hero */
-.hero{display:grid;gap:14px;padding:28px 28px 26px;border-radius:18px;background:
-  radial-gradient(120% 140% at 100% 0%, color-mix(in srgb,var(--c-violet) 22%,transparent) 0,transparent 55%),
-  radial-gradient(120% 140% at 0% 100%, color-mix(in srgb,var(--c-teal) 20%,transparent) 0,transparent 55%),
-  var(--surface);border:1px solid var(--line)}
-.hero .top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center}
-.eyebrow{font-family:var(--f-mono);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-h1{font-family:var(--f-display);font-weight:800;font-size:clamp(34px,5.4vw,58px);line-height:1.02;margin:0;letter-spacing:-.02em;text-wrap:balance}
-.lede{font-size:18px;color:var(--muted);margin:0;max-width:62ch}
-.pills{display:flex;flex-wrap:wrap;gap:8px}
-.pill{font-size:13px;font-weight:600;padding:4px 11px;border-radius:999px;background:var(--sunk);color:var(--muted)}
-.pill.warn{background:var(--warn-soft);color:var(--warn)}
-.theme-btn{font:500 13px var(--f-body);background:var(--sunk);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
-
-/* at a glance */
-.glance-h{font-family:var(--f-display);font-weight:800;font-size:20px;margin:30px 0 12px}
-.glance{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-@media (max-width:860px){.glance{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:420px){.glance{grid-template-columns:minmax(0,1fr)}}
-.tile{--c:var(--c-slate);display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--c);text-decoration:none;color:var(--fg);min-width:0}
-.tile:hover,.tile:focus-visible{background:color-mix(in srgb,var(--c) calc(var(--tint)*100%),var(--surface));outline:none}
-.tile .e{font-size:22px;line-height:1}
-.tile b{display:block;font-size:14.5px;line-height:1.3}
-.tile span{font-size:13px;color:var(--muted);line-height:1.35;display:block;margin-top:2px}
-
-/* topic cards */
-.card{--c:var(--c-blue);margin-top:26px;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
-.card-h{display:flex;gap:14px;align-items:center;padding:16px 22px;background:color-mix(in srgb,var(--c) calc(var(--tint)*100%),var(--surface));border-bottom:1px solid var(--line)}
-.card-h .e{font-size:30px;line-height:1;flex-shrink:0}
-.card-h h2{font-family:var(--f-display);font-weight:800;font-size:clamp(21px,2.6vw,26px);line-height:1.15;margin:0;text-wrap:balance}
-.card-h .tag{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--c);font-weight:600}
-.asked{margin:0;padding:12px 22px;font-size:14.5px;color:var(--muted);border-bottom:1px dashed var(--line);display:flex;gap:8px}
-.asked::before{content:"💬";font-style:normal}
-.body{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:0}
-@media (max-width:820px){.body{grid-template-columns:minmax(0,1fr)}}
-.col{padding:18px 22px 20px;min-width:0}
-.col + .col{border-left:1px solid var(--line);background:color-mix(in srgb,var(--c) calc(var(--tint)*45%),var(--surface))}
-@media (max-width:820px){.col + .col{border-left:0;border-top:1px solid var(--line)}}
-.label{display:flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
-.col + .col .label{color:var(--c)}
-.col p{margin:0 0 10px}
-.col ul{margin:0;padding-left:20px}
-.rules{list-style:none;padding:0!important;display:grid;gap:10px}
-.rules li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:6px;align-items:start}
-.rules li .i{font-size:17px;line-height:1.45}
-.full{padding:0 22px 20px}
-.full > :first-child{margin-top:0}
-
-.grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:4px 0 4px}
-@media (max-width:560px){.grid4{grid-template-columns:minmax(0,1fr)}}
-.mini{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg);min-width:0}
-.mini b{display:block;font-size:15px}
-.mini small{display:block;font-family:var(--f-mono);font-size:11.5px;color:var(--muted);margin-bottom:4px}
-.mini p{margin:0;font-size:14.5px}
-
-.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:6px 0 4px}
-table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:480px}
-th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--sunk);font-weight:600}
-tr:last-child td{border-bottom:0}
-.num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--f-mono);font-size:13.5px}
-.good{color:var(--c-green);font-weight:600}
-
-.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0 12px}
-.node{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:6px 10px;font-size:13.5px}
-.node b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.to{color:var(--muted)}
-
-.note{display:flex;gap:10px;border-radius:10px;padding:10px 14px;margin:12px 0 0;font-size:14.5px;background:var(--warn-soft);color:var(--fg)}
-.note.bad{background:var(--bad-soft)}
-.note .i{font-size:17px}
-.note b{color:var(--warn)}
-.note.bad b{color:var(--bad)}
-
-pre{background:var(--code-bg);color:var(--code-fg);font-family:var(--f-mono);font-size:13px;line-height:1.55;padding:14px 16px;border-radius:10px;overflow-x:auto;margin:10px 0 0}
+pre{position:relative;background:var(--code-bg);color:var(--code-fg);font-family:var(--f-mono);font-size:13px;line-height:1.55;padding:14px 16px;border-radius:8px;overflow-x:auto;margin:10px 0 14px}
 pre code{background:none;padding:0;color:inherit;font-size:inherit}
-.k{color:var(--code-key)} .s{color:var(--code-str)} .c{color:var(--code-cmt)}
-.copy{float:right;font:500 12px var(--f-body);color:var(--code-fg);background:transparent;border:1px solid #3a4658;border-radius:6px;padding:3px 9px;cursor:pointer}
-
-.big{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 10px}
-.stat{flex:1 1 120px;border-radius:10px;background:var(--bg);border:1px solid var(--line);padding:10px 12px}
-.stat .v{font-family:var(--f-display);font-weight:800;font-size:26px;line-height:1.1}
-.stat .l{font-size:12.5px;color:var(--muted)}
-
-footer{margin-top:30px;font-size:13.5px;color:var(--muted)}
+.file{display:inline-block;font-family:var(--f-mono);font-size:12px;color:var(--muted);margin:10px 0 -6px}
+.k{color:var(--k)} .s{color:var(--s)} .n{color:var(--n)} .cm{color:var(--cm)}
+.copy{position:absolute;top:8px;right:8px;font:500 11.5px var(--f-body);color:var(--code-fg);background:#232a32;border:1px solid #39424d;border-radius:5px;padding:2px 8px;cursor:pointer}
+.tbl{overflow-x:auto;margin:10px 0 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:var(--sunk);font-weight:500}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--f-mono);font-size:13px}
+.da{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0 4px}
+@media (max-width:720px){.da{grid-template-columns:minmax(0,1fr)}}
+.da > div{border:1px solid var(--line);border-radius:8px;padding:10px 14px;background:var(--surface);min-width:0}
+.da h4{margin:0 0 4px;font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.da .do h4{color:var(--do)} .da .av h4{color:var(--avoid)}
+.da ul{margin:0;padding-left:18px;font-size:14.5px}
+.warn{background:var(--warn-bg);border-left:3px solid var(--warn);padding:9px 14px;border-radius:0 6px 6px 0;margin:12px 0;font-size:14.5px}
+.warn b{color:var(--warn)}
+.formula{font-family:var(--f-mono);font-size:14px;background:var(--sunk);border-radius:6px;padding:10px 14px;margin:10px 0;overflow-x:auto}
+footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted)}
 footer ul{padding-left:18px}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
-<div class="page">
-
-<header class="hero">
-  <div class="top"><div class="eyebrow">GitHub Copilot · Workflows · Cost</div><button class="theme-btn" id="theme-btn" type="button">🌗 Theme</button></div>
-  <h1>Copilot workflows for DevOps teams</h1>
-  <p class="lede">Built from the questions raised in our session. Every topic gives a short explanation on the left and rules of thumb on the right.</p>
-  <div class="pills"><span class="pill warn">🧪 Dynamic &amp; Agentic Workflows are in public preview</span><span class="pill">✅ Facts checked October 2026</span></div>
-</header>
-
-<h2 class="glance-h">At a glance</h2>
-<nav class="glance" aria-label="Topics">
-  <a class="tile" href="#map" style="--c:var(--c-slate)"><span class="e">🧭</span><div><b>Four kinds of workflow</b><span>Which tool for which job</span></div></a>
-  <a class="tile" href="#auto" style="--c:var(--c-rose)"><span class="e">🎯</span><div><b>Auto, pinning &amp; fallback</b><span>Keep the model and the context</span></div></a>
-  <a class="tile" href="#dynamic" style="--c:var(--c-violet)"><span class="e">🧩</span><div><b>Dynamic Workflows</b><span>Processes in code, run locally</span></div></a>
-  <a class="tile" href="#ghaw" style="--c:var(--c-teal)"><span class="e">🤖</span><div><b>Agentic Workflows</b><span>Agents in GitHub Actions</span></div></a>
-  <a class="tile" href="#cidoctor" style="--c:var(--c-amber)"><span class="e">🩺</span><div><b>CI Doctor example</b><span>Diagnose failed runs cheaply</span></div></a>
-  <a class="tile" href="#bedrock" style="--c:var(--c-amber)"><span class="e">☁️</span><div><b>Already on Bedrock?</b><span>Two separate meters</span></div></a>
-  <a class="tile" href="#skills" style="--c:var(--c-blue)"><span class="e">🧰</span><div><b>Skills from Claude Code</b><span>No need to move them</span></div></a>
-  <a class="tile" href="#tokens" style="--c:var(--c-blue)"><span class="e">🔢</span><div><b>How skills use tokens</b><span>You pay per use</span></div></a>
-  <a class="tile" href="#pays" style="--c:var(--c-green)"><span class="e">💳</span><div><b>Who pays</b><span>Depends on the token</span></div></a>
-  <a class="tile" href="#models" style="--c:var(--c-green)"><span class="e">⚖️</span><div><b>Choosing a model</b><span>Prices and a measured run</span></div></a>
-  <a class="tile" href="#reusable" style="--c:var(--c-slate)"><span class="e">📁</span><div><b>Reusable workflow folders</b><span>A workaround today</span></div></a>
-  <a class="tile" href="#poc" style="--c:var(--c-violet)"><span class="e">🚀</span><div><b>Suggested POC</b><span>Two weeks, measured</span></div></a>
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+  <div class="t">Contents</div>
+  <ol>
+    <li><a href="#map">1. Four kinds of workflow</a></li>
+    <li><a href="#auto">2. Model pinning and fallback</a></li>
+    <li><a href="#dynamic">3. Dynamic Workflows</a></li>
+    <li><a class="sub" href="#dw-code">Minimal workflow</a></li>
+    <li><a class="sub" href="#dw-fallback">Fallback pattern</a></li>
+    <li><a class="sub" href="#dw-gotchas">Runtime semantics</a></li>
+    <li><a href="#ghaw">4. Agentic Workflows</a></li>
+    <li><a class="sub" href="#ghaw-doctor">CI Doctor workflow</a></li>
+    <li><a class="sub" href="#ghaw-cost">Cost model</a></li>
+    <li><a href="#bedrock">5. Existing Bedrock setups</a></li>
+    <li><a href="#skills">6. Skills from Claude Code</a></li>
+    <li><a href="#tokens">7. Token accounting</a></li>
+    <li><a href="#metering">8. Measuring cost</a></li>
+    <li><a href="#pays">9. SDK billing</a></li>
+    <li><a href="#models">10. Model choice</a></li>
+    <li><a href="#reusable">11. Reusable workflow folders</a></li>
+    <li><a href="#poc">12. POC plan</a></li>
+  </ol>
+  <button class="theme" id="theme" type="button">Toggle theme</button>
 </nav>
 
-<!-- 1 -->
-<article class="card" id="map" style="--c:var(--c-slate)">
-  <div class="card-h"><span class="e">🧭</span><div><div class="tag">Orientation</div><h2>Four things called "workflows"</h2></div></div>
+<main>
+<div class="top">
+  <div class="crumb">github-copilot / workflows / devops</div>
+  <h1>Copilot workflows for DevOps teams</h1>
+  <p class="lede">Engineering notes based on the questions from our session: how the workflow tools differ at runtime, how to pin and fall back between models, how skills and instructions carry over from Claude Code, how tokens are counted and billed, and how to measure all of it.</p>
+  <div class="status"><span><b>preview</b> Dynamic Workflows</span><span><b>preview</b> GitHub Agentic Workflows</span><span>SDK referenced: @github/copilot-sdk 1.0.19</span><span>checked: Oct 2026</span></div>
+</div>
+
+<section id="map">
+  <h2><span class="num">1</span>Four kinds of workflow</h2>
   <p class="asked">Is there a difference between Dynamic Workflows, regular workflows and Agentic Workflows?</p>
-  <div class="body">
-    <div class="col"><div class="label">📘 In short</div>
-      <p>They are four separate tools. The difference is who defines the process and where it runs.</p>
-      <div class="grid4">
-        <div class="mini"><small>Copilot CLI · app · SDK</small><b>🧩 Dynamic Workflows</b><p>You write the process in code; agents handle the steps that need judgment.</p></div>
-        <div class="mini"><small>GitHub Actions</small><b>🤖 Agentic Workflows</b><p>Markdown instructions compiled into an Actions workflow.</p></div>
-        <div class="mini"><small>GitHub Actions · YAML</small><b>⚙️ Actions workflows</b><p>Classic CI/CD with no AI.</p></div>
-        <div class="mini"><small>Copilot CLI</small><b>🚀 /fleet</b><p>Copilot decides how to split a goal across subagents.</p></div>
-      </div>
-    </div>
-    <div class="col"><div class="label">✅ Rules of thumb</div>
-      <ul class="rules">
-        <li><span class="i">👩‍💻</span><span>A developer drives it and approves each step → <b>Dynamic Workflows</b>.</span></li>
-        <li><span class="i">⏰</span><span>It should run by itself on an event or schedule → <b>Agentic Workflows</b>.</span></li>
-        <li><span class="i">🧱</span><span>Build, test, deploy → <b>plain Actions</b>. Keep deterministic steps away from models.</span></li>
-        <li><span class="i">🧭</span><span>You don't know the steps yet → <b>/fleet</b>. You do → write them down.</span></li>
-        <li><span class="i">💬</span><span>A quick question or small change → a normal prompt.</span></li>
-      </ul>
-    </div>
+  <p>Four separate tools. They differ in who defines the control flow, where it executes and how it's triggered.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Tool</th><th>Defined in</th><th>Runs in</th><th>Control flow set by</th><th>Triggered by</th></tr></thead>
+    <tbody>
+      <tr><td>Dynamic Workflows</td><td><code>.github/extensions/&lt;name&gt;/extension.mjs</code> (JS/TS)</td><td>Copilot CLI, Copilot app, SDK host, local</td><td>Your code</td><td>A developer: <code>copilot workflow run</code>, SDK, app</td></tr>
+      <tr><td>GitHub Agentic Workflows (<code>gh-aw</code>)</td><td><code>.github/workflows/&lt;name&gt;.md</code> → compiled <code>.lock.yml</code></td><td>GitHub Actions runner, agent in a container</td><td>Your Markdown instructions + the agent</td><td>Actions events, schedule, manual</td></tr>
+      <tr><td>Actions workflows</td><td><code>.github/workflows/*.yml</code></td><td>GitHub Actions</td><td>YAML, deterministic</td><td>Actions events</td></tr>
+      <tr><td><code>/fleet</code></td><td>Nothing persisted</td><td>Copilot CLI session</td><td>The model decomposes the goal</td><td>A prompt</td></tr>
+    </tbody>
+  </table></div>
+  <div class="da">
+    <div class="do"><h4>Use</h4><ul>
+      <li>Dynamic Workflows for developer-driven, multi-step work that needs checkpoints (migrations)</li>
+      <li>gh-aw for event- or schedule-driven repo automation (CI diagnosis, triage, reports)</li>
+      <li>Plain Actions for build, test, deploy</li>
+    </ul></div>
+    <div class="av"><h4>Avoid</h4><ul>
+      <li>Putting a model in a deterministic CI path</li>
+      <li>Using <code>/fleet</code> for a process you need to repeat identically</li>
+      <li>Orchestrating a one-off change that a single prompt can do</li>
+    </ul></div>
   </div>
-</article>
+</section>
 
-<!-- 2 -->
-<article class="card" id="auto" style="--c:var(--c-rose)">
-  <div class="card-h"><span class="e">🎯</span><div><div class="tag">Reliability</div><h2>Auto, pinned models and what happens when a model is unavailable</h2></div></div>
-  <p class="asked">Auto lost the context in a long migration. But if we pin a model and it's unavailable, what then?</p>
-  <div class="body">
-    <div class="col"><div class="label">📘 In short</div>
-      <p>Auto exists so that some model is always available; the price is that you don't control which one runs. The real damage in a long task comes when the model changes <b>and the context lives only in the chat</b>.</p>
-      <p>So there are two jobs: control which model runs, and keep the context somewhere every model can read it. No guarantee of availability exists; these steps manage the moment a model is missing.</p>
-      <div class="tbl"><table><thead><tr><th>Situation</th><th>Use</th></tr></thead><tbody>
-        <tr><td>One developer, long task</td><td>Pinned model + <code>PLAN.md</code> + one session per step</td></tr>
-        <tr><td>A team repeating the same task</td><td>Custom agent with a <code>model</code> field + <code>AGENTS.md</code></td></tr>
-        <tr><td>Must be identical every run, with checks</td><td>Dynamic Workflows</td></tr>
-        <tr><td>Org-wide cost and model control</td><td>Model policy</td></tr>
-      </tbody></table></div>
-    </div>
-    <div class="col"><div class="label">✅ Rules of thumb</div>
-      <ul class="rules">
-        <li><span class="i">📌</span><span><b>Pin a model for long tasks.</b> Use Auto for short questions.</span></li>
-        <li><span class="i">🔁</span><span><b>Pick the fallback in advance</b>, from the same tier (for example Sonnet 5.5 → Sonnet 5). Switching is fine; switching silently is not.</span></li>
-        <li><span class="i">🧾</span><span><b>Log which model actually ran</b> each step, so results can be traced.</span></li>
-        <li><span class="i">⏸️</span><span><b>For a temporary outage, wait and resume.</b> In Dynamic Workflows, finished steps are saved and the run continues from the checkpoint.</span></li>
-        <li><span class="i">📄</span><span><b>Write decisions to files</b> (<code>PLAN.md</code>, <code>AGENTS.md</code>). Anything left only in the chat will be lost.</span></li>
-        <li><span class="i">✂️</span><span><b>One step per session.</b> Start fresh, read the plan, update it at the end.</span></li>
-        <li><span class="i">🏢</span><span><b>Keep two same-tier models enabled</b> in Model policy, and watch for model retirement notices.</span></li>
-      </ul>
-    </div>
+<section id="auto">
+  <h2><span class="num">2</span>Model pinning, fallback and lost context</h2>
+  <p class="asked">Auto lost the context in a long migration. If we pin a model and it becomes unavailable, what happens?</p>
+  <p>Auto optimizes for availability: some model always answers, but you don't control which. Pinning gives control but a pinned model can be rate-limited, disabled by policy or retired. The failure you saw is a combination of two things: the model changed, <b>and</b> the state of the task existed only in the conversation. Fix both independently.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Mechanism</th><th>Where</th><th>Pins model</th><th>Persists task state</th></tr></thead>
+    <tbody>
+      <tr><td>Model picker / <code>/model</code></td><td>CLI, IDE</td><td>Per session</td><td>No</td></tr>
+      <tr><td>Custom agent with <code>model:</code></td><td><code>.github/agents/&lt;name&gt;.agent.md</code></td><td>Per agent profile (check per client)</td><td>No</td></tr>
+      <tr><td><code>ctx.agent(..., {model, reasoningEffort})</code></td><td>Dynamic Workflows</td><td>Per call</td><td>Yes: journaled steps, pause/resume</td></tr>
+      <tr><td><code>engine.model</code></td><td>gh-aw frontmatter</td><td>Per workflow</td><td>Per run only</td></tr>
+      <tr><td>Model policy</td><td>Org / enterprise settings</td><td>Limits the allowed set</td><td>No</td></tr>
+      <tr><td><code>PLAN.md</code>, <code>AGENTS.md</code>, Copilot Memory</td><td>Repo</td><td>No</td><td>Yes, model-independent</td></tr>
+    </tbody>
+  </table></div>
+  <div class="da">
+    <div class="do"><h4>Do</h4><ul>
+      <li>Pin a primary model for long tasks and name a same-tier fallback in advance</li>
+      <li>Record the resolved model for every step</li>
+      <li>On transient unavailability, pause and resume from the last saved step instead of switching</li>
+      <li>Keep plan, decisions and constraints in files every model reads</li>
+      <li>Keep at least two same-tier models enabled in Model policy</li>
+    </ul></div>
+    <div class="av"><h4>Avoid</h4><ul>
+      <li>Silent fallback to Auto inside a multi-step task</li>
+      <li>One long session for a whole migration; use one step per session</li>
+      <li>Assuming any model is always available</li>
+    </ul></div>
   </div>
-</article>
+</section>
 
-<!-- 3 -->
-<article class="card" id="dynamic" style="--c:var(--c-violet)">
-  <div class="card-h"><span class="e">🧩</span><div><div class="tag">Local orchestration</div><h2>Dynamic Workflows</h2></div></div>
-  <div class="body">
-    <div class="col"><div class="label">📘 In short</div>
-      <p>An extension file under <code>.github/extensions/&lt;name&gt;/</code> defines a process: stages, parallel steps, saved results, a human checkpoint and resume. Each agent call can set its own model and reasoning effort.</p>
-      <div class="flow"><div class="node"><b>Observe</b>Evidence</div><span class="to">→</span><div class="node"><b>Route</b>Add specialists</div><span class="to">→</span><div class="node"><b>Verify</b>Checks in code</div><span class="to">→</span><div class="node"><b>Approve</b>Human</div></div>
-      <div class="note"><span class="i">⚠️</span><span><b>Verify first.</b> Availability depends on client version, plan, organization policy and model access.</span></div>
-    </div>
-    <div class="col"><div class="label">✅ Rules of thumb</div>
-      <ul class="rules">
-        <li><span class="i">📌</span><span><b>Set a model on every agent call</b>, and stop the run rather than fall back silently.</span></li>
-        <li><span class="i">🔐</span><span><b>Pre-authorize only the tools you need.</b> Direct <code>copilot workflow run</code> shows no approval prompts, and subagents inherit the session's tools.</span></li>
-        <li><span class="i">🔍</span><span><b>Review the extension like production code.</b> <code>tools: []</code> restricts the agent, not the extension's JavaScript.</span></li>
-        <li><span class="i">🔂</span><span><b>Make side effects safe to repeat.</b> Resume is at-least-once.</span></li>
-        <li><span class="i">❓</span><span><b>Treat a missing answer as a failure.</b> A failed agent call returns <code>null</code>; validate results in code.</span></li>
-        <li><span class="i">💸</span><span><b>The credit cap is soft.</b> <code>maxAiCredits</code> is post-paid and can overshoot slightly.</span></li>
-      </ul>
-    </div>
+<section id="dynamic">
+  <h2><span class="num">3</span>Dynamic Workflows</h2>
+  <p>A repository extension registers one or more workflows with <code>defineWorkflow</code> and <code>joinSession</code>. The CLI supplies the SDK to the extension process. The workflow body is ordinary async code with a context object exposing agents, parallel barriers, journaled steps, phases, logs, pause and cancellation.</p>
+  <pre><code>.github/
+  extensions/
+    migrate-module/
+      extension.mjs        <span class="cm"># defineWorkflow(...) + joinSession(...)</span>
+  agents/
+    planner.agent.md       <span class="cm"># optional profiles: prompt, tools, model</span>
+    implementer.agent.md</code></pre>
+  <pre><code><span class="cm"># run, observe, resume</span>
+copilot --experimental workflow run migrate-module --args @inputs/module-a.json
+<span class="cm"># inside a session: /workflows   (or the app's Workflows panel)</span></code></pre>
+
+  <h3 id="dw-code">Minimal workflow with a pinned model per step</h3>
+  <div class="file">.github/extensions/migrate-module/extension.mjs</div>
+  <pre><button class="copy" type="button">Copy</button><code><span class="k">import</span> { defineWorkflow, joinSession } <span class="k">from</span> <span class="s">"@github/copilot-sdk/extension"</span>;
+
+<span class="k">const</span> PLANNER = { model: <span class="s">"claude-sonnet-5.5"</span>, reasoningEffort: <span class="s">"high"</span> };
+<span class="k">const</span> WORKER  = { model: <span class="s">"&lt;small model id&gt;"</span>, reasoningEffort: <span class="s">"low"</span> };
+
+<span class="k">const</span> migrate = defineWorkflow({
+  meta: {
+    name: <span class="s">"migrate-module"</span>,
+    phases: [<span class="s">"Plan"</span>, <span class="s">"Implement"</span>, <span class="s">"Verify"</span>, <span class="s">"Approve"</span>].map((title) =&gt; ({ title })),
+    limits: { maxConcurrentSubagents: <span class="n">2</span>, maxTotalSubagents: <span class="n">10</span>, timeoutSeconds: <span class="n">1800</span> },
+  },
+  run: <span class="k">async</span> (ctx) =&gt; {
+    ctx.phase(<span class="s">"Plan"</span>);
+    <span class="cm">// ctx.step journals the JSON result under a versioned key; resume reuses it</span>
+    <span class="k">const</span> plan = <span class="k">await</span> ctx.step(<span class="s">"v1:plan"</span>, () =&gt;
+      ctx.agent(<span class="s">`Read PLAN.md and propose the steps for ${ctx.args.module}.`</span>,
+        { ...PLANNER, label: <span class="s">"plan"</span>, schema: PLAN_SCHEMA }));
+    <span class="k">if</span> (plan === <span class="k">null</span>) <span class="k">throw new</span> Error(<span class="s">"Planner returned nothing; stop, don't guess."</span>);
+
+    ctx.phase(<span class="s">"Implement"</span>);
+    <span class="k">const</span> results = <span class="k">await</span> ctx.parallel(plan.steps.map((s) =&gt; () =&gt;
+      ctx.step(<span class="s">`v1:impl:${s.id}`</span>, () =&gt;
+        ctx.agent(s.prompt, { ...WORKER, label: <span class="s">`impl-${s.id}`</span> }))));
+
+    ctx.phase(<span class="s">"Verify"</span>);
+    <span class="k">const</span> tests = <span class="k">await</span> ctx.step(<span class="s">"v1:tests"</span>, () =&gt; runTests());  <span class="cm">// deterministic code, no model</span>
+    <span class="k">if</span> (!tests.passed) <span class="k">throw new</span> Error(<span class="s">"Tests failed; candidate held."</span>);
+
+    ctx.phase(<span class="s">"Approve"</span>);
+    <span class="k">await</span> ctx.pause(<span class="s">"v1:approve"</span>);   <span class="cm">// durable checkpoint; a human resumes the same run</span>
+    <span class="k">return</span> { plan, results, tests };
+  },
+});
+
+<span class="k">await</span> joinSession({ workflows: [migrate] });</code></pre>
+  <p class="warn"><b>Illustrative.</b> Option names follow the SDK workflow docs for v1.0.19; <code>PLAN_SCHEMA</code> and <code>runTests</code> are yours. Check the SDK version you pin.</p>
+
+  <h3 id="dw-fallback">Explicit fallback instead of Auto</h3>
+  <p>Try the primary model, fall back to a named same-tier model, and record which one actually resolved. The run detail exposes the agents that ran, so you can assert on the resolved model (the Launch Rescue demo does this before accepting any result).</p>
+  <pre><button class="copy" type="button">Copy</button><code><span class="k">const</span> CHAIN = [<span class="s">"claude-sonnet-5.5"</span>, <span class="s">"claude-sonnet-5"</span>];   <span class="cm">// same tier, chosen in advance</span>
+
+<span class="k">async function</span> agentWithFallback(ctx, prompt, opts) {
+  <span class="k">for</span> (<span class="k">const</span> model <span class="k">of</span> CHAIN) {
+    <span class="k">const</span> label = <span class="s">`${opts.label}:${model}`</span>;      <span class="cm">// distinct label: identical calls are memoized</span>
+    <span class="k">const</span> out = <span class="k">await</span> ctx.agent(prompt, { ...opts, model, label });
+    <span class="k">if</span> (out !== <span class="k">null</span>) { ctx.log(<span class="s">`resolved ${opts.label} on ${model}`</span>); <span class="k">return</span> out; }
+    ctx.log(<span class="s">`${model} returned no result; trying next`</span>);
+  }
+  <span class="k">await</span> ctx.pause(<span class="s">`v1:wait-for-model:${opts.label}`</span>);   <span class="cm">// nothing available: stop, resume later</span>
+}</code></pre>
+
+  <h3 id="dw-gotchas">Runtime semantics that matter</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Behaviour</th><th>Consequence</th></tr></thead>
+    <tbody>
+      <tr><td><code>ctx.agent</code> returns <code>null</code> on ordinary failure; cancellation, limits and hard failures reject</td><td>Treat <code>null</code> as failure. Never let it become an empty success.</td></tr>
+      <tr><td>Structured output validates a subset of JSON Schema (ranges, patterns, <code>additionalProperties</code> not enforced)</td><td>Validate semantics in your own code.</td></tr>
+      <tr><td>Identical prompt + options calls are memoized</td><td>Use distinct <code>label</code>s for independent work.</td></tr>
+      <tr><td><code>ctx.step</code> key is the only journal identity; recovery is at-least-once</td><td>Version keys (<code>v2:...</code>) when logic changes; make side effects idempotent.</td></tr>
+      <tr><td>Resume restarts the body and reuses saved steps; unsaved work runs again</td><td>Wrap anything expensive or side-effecting in <code>ctx.step</code>.</td></tr>
+      <tr><td><code>ctx.phase</code> is run-global</td><td>Don't call it from competing parallel branches.</td></tr>
+      <tr><td>Concurrency cap queues work; other limits stop the run; <code>maxAiCredits</code> is soft and post-paid</td><td>A run can overshoot the credit cap slightly.</td></tr>
+      <tr><td>Paused runs resume; cancelled runs don't</td><td>Use pause for review gates.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="da">
+    <div class="do"><h4>Security</h4><ul>
+      <li>Pre-authorize only required tools: direct <code>copilot workflow run</code> shows no approval prompts</li>
+      <li>Subagents inherit the session's tool grants; scope the session</li>
+      <li>Code-review the extension: it's JavaScript with normal process permissions</li>
+    </ul></div>
+    <div class="av"><h4>Don't assume</h4><ul>
+      <li><code>tools: []</code> sandboxes the extension (it restricts the agent only)</li>
+      <li>CLI and SDK share session-storage formats across versions</li>
+      <li>Nested workflows (not supported)</li>
+    </ul></div>
   </div>
-</article>
+</section>
 
-<!-- 4 -->
-<article class="card" id="ghaw" style="--c:var(--c-teal)">
-  <div class="card-h"><span class="e">🤖</span><div><div class="tag">Agents in Actions</div><h2>Agentic Workflows (gh-aw)</h2></div></div>
-  <div class="body">
-    <div class="col"><div class="label">📘 In short</div>
-      <p>A Markdown file with a YAML header for triggers, permissions and limits, and plain-language instructions below. <code>gh aw compile</code> turns it into a <code>.lock.yml</code> Actions workflow.</p>
-      <ul>
-        <li>🔒 Read-only token by default, no secrets in the agent's sandbox</li>
-        <li>🧱 Network firewall with approved destinations only</li>
-        <li>✋ Safe outputs: the agent proposes, a separate job applies</li>
-        <li>🛡️ Threat detection on proposed output</li>
-        <li>🔄 Engine: Copilot by default, or Claude Code, Codex, Gemini with an API key</li>
-      </ul>
-    </div>
-    <div class="col"><div class="label">✅ Rules of thumb</div>
-      <ul class="rules">
-        <li><span class="i">✋</span><span><b>Let the agent propose, never write.</b> Keep the read-only default and review every change.</span></li>
-        <li><span class="i">🪶</span><span><b>Small tasks, small model.</b> Set it per workflow with <code>engine.model</code>.</span></li>
-        <li><span class="i">📏</span><span><b>Lower the default caps.</b> Defaults are 1000 AI credits and 500 turns per run. Run a few times, read actual usage in <code>gh aw audit</code>, then cap at about twice that.</span></li>
-        <li><span class="i">✂️</span><span><b>Skip what isn't needed.</b> <code>engine.bare: true</code> drops <code>AGENTS.md</code> and other custom instructions.</span></li>
-        <li><span class="i">📊</span><span><b>Measure from day one</b> with <code>gh aw logs</code>, <code>gh aw audit</code> or OpenTelemetry export.</span></li>
-      </ul>
-    </div>
-  </div>
-</article>
+<section id="ghaw">
+  <h2><span class="num">4</span>GitHub Agentic Workflows (gh-aw)</h2>
+  <p>A Markdown file with YAML frontmatter (triggers, permissions, engine, limits, safe outputs) and a natural-language body. <code>gh aw compile</code> produces a standard Actions workflow, <code>&lt;name&gt;.lock.yml</code>, that runs the agent in a container.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Control</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td>Read-only token</td><td>The agent job's <code>GITHUB_TOKEN</code> is read-only by default; secrets are kept out of the agent sandbox.</td></tr>
+      <tr><td>Agent Workflow Firewall</td><td>Container egress limited to approved destinations; optional MicroVM isolation on compatible runners.</td></tr>
+      <tr><td>Safe outputs</td><td>The agent emits proposed writes (issue, comment, PR); a separate, permissioned job validates and applies them.</td></tr>
+      <tr><td>Threat detection</td><td>A dedicated job scans proposed outputs and blocks suspicious changes.</td></tr>
+      <tr><td>Compile-time checks</td><td>Schema validation, expression allowlisting, action pinning.</td></tr>
+      <tr><td>Integrity filtering</td><td>Filters untrusted GitHub content to reduce prompt injection.</td></tr>
+      <tr><td>Engines</td><td><code>copilot</code> (default), <code>claude</code>, <code>codex</code>, <code>gemini</code> with the provider key. <code>engine.model</code> per workflow; <code>engine.agent</code> selects a profile from <code>.github/agents/</code>.</td></tr>
+      <tr><td>Limits</td><td><code>max-ai-credits</code> (default 1000), <code>max-turns</code> (default 500), Copilot <code>max-continuations</code>.</td></tr>
+    </tbody>
+  </table></div>
 
-<!-- 5 -->
-<article class="card" id="cidoctor" style="--c:var(--c-amber)">
-  <div class="card-h"><span class="e">🩺</span><div><div class="tag">Worked example</div><h2>A CI Doctor that stays cheap</h2></div></div>
-  <p class="asked">Our DevOps skill analyzes CI/CD and environment issues across Jira and GitHub Actions. Can we rebuild it with workflows?</p>
-  <div class="body">
-    <div class="col"><div class="label">📘 In short</div>
-      <p>Yes. Run on demand with approvals → Dynamic Workflows. Run on every failed CI run → Agentic Workflows. For automatic runs, cost is <b>cost per run × number of runs</b>, and the log is usually much bigger than the skill.</p>
-      <div class="flow"><div class="node"><b>Trigger</b>CI fails on main</div><span class="to">→</span><div class="node"><b>Prepare</b>Cut log to error</div><span class="to">→</span><div class="node"><b>Diagnose</b>Small model</div><span class="to">→</span><div class="node"><b>Propose</b>Issue or PR</div><span class="to">→</span><div class="node"><b>Review</b>Engineer</div></div>
-      <div class="tbl"><table><thead><tr><th>Illustrative day</th><th class="num">Before</th><th class="num">After</th></tr></thead><tbody>
-        <tr><td>Runs</td><td class="num">30</td><td class="num">10</td></tr>
-        <tr><td>Tokens per run</td><td class="num">22,000</td><td class="num">4,000</td></tr>
-        <tr><td>Tokens per day</td><td class="num">660,000</td><td class="num">40,000</td></tr>
-        <tr><td>Model</td><td class="num">Sonnet 5</td><td class="num">Haiku 5.5</td></tr>
-        <tr><td>Input cost per day</td><td class="num">≈ $1.32</td><td class="num good">&lt; $0.01</td></tr>
-      </tbody></table></div>
-    </div>
-    <div class="col"><div class="label">✅ Rules of thumb</div>
-      <ul class="rules">
-        <li><span class="i">🎯</span><span><b>Fewer runs beats a cheaper model.</b> Only on failure, only on <code>main</code> and release branches, no re-diagnosis of the same failing check.</span></li>
-        <li><span class="i">✂️</span><span><b>Send the error, not the log.</b> A plain step before the agent keeps the failure and the lines leading to it.</span></li>
-        <li><span class="i">🪶</span><span><b>Diagnose small, fix big.</b> Escalate to Sonnet or a developer only for a real code change.</span></li>
-        <li><span class="i">📏</span><span><b>Cap from measurements, not guesses.</b></span></li>
-      </ul>
-      <pre><button class="copy" type="button" data-copy="fm">Copy</button><code id="fm"><span class="c"># Starting point. Check model ID and trigger syntax</span>
-<span class="c"># in the gh-aw docs; set caps from your first runs.</span>
+  <h3 id="ghaw-doctor">CI Doctor: diagnose failed runs</h3>
+  <p class="asked">Our DevOps skill analyzes CI/CD and environment issues across Jira and GitHub Actions. Can we rebuild it?</p>
+  <p>Event-driven version. The trigger is a completed CI run on <code>main</code>; the agent reads a trimmed failure excerpt, not the full log, and can only propose an issue.</p>
+  <div class="file">.github/workflows/ci-doctor.md</div>
+  <pre><button class="copy" type="button">Copy</button><code>---
 <span class="k">on</span>:
   <span class="k">workflow_run</span>:
     <span class="k">workflows</span>: [<span class="s">"CI"</span>]
     <span class="k">types</span>: [completed]
     <span class="k">branches</span>: [main]
+<span class="k">if</span>: <span class="s">${{ github.event.workflow_run.conclusion == 'failure' }}</span>
+<span class="k">permissions</span>:
+  <span class="k">contents</span>: read
+  <span class="k">actions</span>: read
 <span class="k">engine</span>:
   <span class="k">id</span>: copilot
-  <span class="k">model</span>: <span class="s">&lt;small model ID&gt;</span>
-<span class="k">max-ai-credits</span>: <span class="s">&lt;≈2× a typical run&gt;</span>
-<span class="k">max-turns</span>: <span class="s">&lt;≈2× a typical run&gt;</span></code></pre>
-    </div>
-  </div>
-</article>
+  <span class="k">model</span>: <span class="s">&lt;small model id&gt;</span>
+  <span class="k">bare</span>: <span class="n">true</span>               <span class="cm"># skip AGENTS.md / custom instructions if not needed</span>
+<span class="k">max-ai-credits</span>: <span class="s">&lt;~2x measured&gt;</span>
+<span class="k">max-turns</span>: <span class="s">&lt;~2x measured&gt;</span>
+<span class="k">safe-outputs</span>:
+  <span class="k">create-issue</span>:
+    <span class="k">title-prefix</span>: <span class="s">"[ci-doctor] "</span>
+    <span class="k">labels</span>: [ci, triage]
+---
 
-<!-- 6 -->
-<article class="card" id="bedrock" style="--c:var(--c-amber)">
-  <div class="card-h"><span class="e">☁️</span><div><div class="tag">Existing setup</div><h2>Already running agents in Actions on Bedrock?</h2></div></div>
-  <div class="body">
-    <div class="col"><div class="label">📘 In short</div>
-      <p>If you already run Claude in GitHub Actions through Amazon Bedrock, you have a working baseline, billed to your AWS account rather than Copilot AI credits. Moving to Agentic Workflows is a choice about controls (safe outputs, firewall, caps, audit) and about which bill you want.</p>
-      <div class="note"><span class="i">⚠️</span><span><b>Verify first.</b> The gh-aw docs list Claude with an Anthropic API key; we haven't confirmed Bedrock authentication for its Claude engine. Copilot BYOK lists Microsoft Foundry, OpenAI and Anthropic keys.</span></div>
-    </div>
-    <div class="col"><div class="label">✅ Rules of thumb</div>
-      <ul class="rules">
-        <li><span class="i">🧮</span><span><b>Two meters:</b> Bedrock shows up on AWS, Copilot in AI credits. Compare cost per run on both.</span></li>
-        <li><span class="i">🛡️</span><span><b>Compare controls, not only price:</b> read-only tokens, network access, write approvals, spend caps.</span></li>
-        <li><span class="i">1️⃣</span><span><b>Move one workflow first</b> and run both side by side for a week.</span></li>
-      </ul>
-    </div>
-  </div>
-</article>
+# Diagnose the failed CI run
 
-<!-- 7 -->
-<article class="card" id="skills" style="--c:var(--c-blue)">
-  <div class="card-h"><span class="e">🧰</span><div><div class="tag">Migration</div><h2>Bringing skills across from Claude Code</h2></div></div>
-  <div class="body">
-    <div class="col"><div class="label">📘 In short</div>
-      <p><b>You don't need to move them.</b> Copilot reads project skills from <code>.github/skills/</code>, <code>.claude/skills/</code> and <code>.agents/skills/</code>, in the same <code>SKILL.md</code> format, in the CLI, app, cloud agent, code review and VS Code agent mode.</p>
-      <p>Claude Code reads <code>CLAUDE.md</code>; Copilot reads <code>AGENTS.md</code>.</p>
-      <div class="note bad"><span class="i">🚫</span><span><b>Avoid symlinking skill folders.</b> Copilot scans several folders, so a symlink can load every skill twice. Symlinks aren't documented for skills and don't always work on Windows checkouts.</span></div>
-    </div>
-    <div class="col"><div class="label">✅ Rules of thumb</div>
-      <ul class="rules">
-        <li><span class="i">📍</span><span><b>One location per skill:</b> leave them in <code>.claude/skills/</code>.</span></li>
-        <li><span class="i">📝</span><span><b>One instructions file:</b> content in <code>AGENTS.md</code>, and one line <code>@AGENTS.md</code> in <code>CLAUDE.md</code>.</span></li>
-        <li><span class="i">🔧</span><span><b>Check <code>allowed-tools</code> names</b> (e.g. <code>Bash</code> vs <code>shell</code>). Pre-approve shell only after review.</span></li>
-        <li><span class="i">🧪</span><span><b>Test important skills in both tools.</b> Another model can follow them differently.</span></li>
-        <li><span class="i">👀</span><span><b>See what loads</b> with <code>/context</code> in the Copilot CLI.</span></li>
-      </ul>
-    </div>
-  </div>
-</article>
+Read `failure-excerpt.txt` (the failing step and the 200 lines before it).
+Identify the most likely root cause and the file or config responsible.
+If it matches a known flaky test listed in `docs/flaky.md`, say so and stop.
+Propose one issue with: cause, evidence (quote the lines), suggested fix.
+Do not modify code.</code></pre>
+  <pre><code><span class="cm"># compile, then commit both the .md and the generated .lock.yml</span>
+gh aw compile ci-doctor
+<span class="cm"># inspect cost and behaviour of recent runs</span>
+gh aw logs ci-doctor
+gh aw audit &lt;run-id&gt;</code></pre>
+  <p class="warn"><b>Verify against the current gh-aw schema.</b> Field names (<code>if</code>, <code>safe-outputs.create-issue</code> options) and how you add the pre-agent step that writes <code>failure-excerpt.txt</code> change between releases. Use <code>gh aw compile</code> errors as the source of truth.</p>
 
-<!-- 8 -->
-<article class="card" id="tokens" style="--c:var(--c-blue)">
-  <div class="card-h"><span class="e">🔢</span><div><div class="tag">Cost mechanics</div><h2>How skills use tokens</h2></div></div>
-  <p class="asked">If several people use the same skill, how are the tokens counted?</p>
-  <div class="body">
-    <div class="col"><div class="label">📘 In short</div>
-      <p>A skill costs nothing while it sits in the repo. You pay each time the model reads it, and every use is paid again.</p>
-      <ol>
-        <li><b>Every request:</b> only the <code>name</code> and <code>description</code></li>
-        <li><b>When used:</b> the full <code>SKILL.md</code></li>
-        <li><b>Only if needed:</b> files it points to</li>
-      </ol>
-      <div class="tbl"><table><thead><tr><th>10 developers, 2,000-token skill</th><th class="num">Tokens / day</th></tr></thead><tbody>
-        <tr><td>Description, 20 requests each × 50</td><td class="num">10,000</td></tr>
-        <tr><td>Skill used 3 times each × 2,000</td><td class="num">60,000</td></tr>
-        <tr><td><b>Total</b></td><td class="num"><b>70,000</b></td></tr>
-      </tbody></table></div>
-    </div>
-    <div class="col"><div class="label">✅ Rules of thumb</div>
-      <ul class="rules">
-        <li><span class="i">✏️</span><span><b>Keep descriptions short and specific.</b> They travel with every request, for every developer.</span></li>
-        <li><span class="i">📦</span><span><b>Move detail out of <code>SKILL.md</code></b> into files that load only when needed.</span></li>
-        <li><span class="i">🔀</span><span><b>Expect different counts per tool:</b> tokenizers, system prompts and caching differ.</span></li>
-        <li><span class="i">📥</span><span><b>In automatic workflows the input dominates.</b> Each run starts fresh and the cache has usually expired.</span></li>
-      </ul>
-    </div>
+  <h3 id="ghaw-cost">Cost model for event-driven agents</h3>
+  <div class="formula">daily_cost ≈ runs_per_day × (prompt_tokens × in_price + output_tokens × out_price)</div>
+  <p>Each run is a fresh session, so there is no conversation history, but also little cross-run cache benefit (runs are usually minutes to hours apart). <code>prompt_tokens</code> is dominated by the event payload you inject, typically the log.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Illustrative</th><th class="r">Naive</th><th class="r">Tuned</th><th>Lever</th></tr></thead>
+    <tbody>
+      <tr><td>Runs / day</td><td class="r">30</td><td class="r">10</td><td>Failure-only, <code>main</code> + release branches, dedupe same check per PR</td></tr>
+      <tr><td>Prompt tokens / run</td><td class="r">22,000</td><td class="r">4,000</td><td>Excerpt instead of full log (2,000-token skill unchanged)</td></tr>
+      <tr><td>Tokens / day</td><td class="r">660,000</td><td class="r">40,000</td><td></td></tr>
+      <tr><td>Model</td><td class="r">Sonnet 5</td><td class="r">small</td><td><code>engine.model</code></td></tr>
+      <tr><td>Input cost / day</td><td class="r">≈ $1.32</td><td class="r">&lt; $0.01</td><td>At $2.00 vs $0.10 per 1M input</td></tr>
+    </tbody>
+  </table></div>
+  <div class="da">
+    <div class="do"><h4>Do</h4><ul>
+      <li>Run a few times uncapped, read actual usage in <code>gh aw audit</code>, cap at ~2× that</li>
+      <li>Trim inputs in a deterministic step before the agent</li>
+      <li>Keep the agent proposing; route writes through safe outputs</li>
+      <li>Export OpenTelemetry to existing dashboards</li>
+    </ul></div>
+    <div class="av"><h4>Avoid</h4><ul>
+      <li>Default caps (1000 credits / 500 turns) in production</li>
+      <li>Triggering on every push or every branch</li>
+      <li>Giving the agent write permissions directly</li>
+    </ul></div>
   </div>
-</article>
+</section>
 
-<!-- 9 -->
-<article class="card" id="pays" style="--c:var(--c-green)">
-  <div class="card-h"><span class="e">💳</span><div><div class="tag">Billing</div><h2>Who pays for the tokens</h2></div></div>
+<section id="bedrock">
+  <h2><span class="num">5</span>Existing Claude-on-Bedrock setups in Actions</h2>
+  <p>If you already run Claude Code in Actions through Amazon Bedrock, that usage is billed to AWS; gh-aw with the Copilot engine bills Copilot AI credits. These are two independent meters, and a migration is a decision about controls and billing, not a requirement.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Compare</th><th>Current Bedrock workflow</th><th>gh-aw</th></tr></thead>
+    <tbody>
+      <tr><td>Billing</td><td>AWS account</td><td>Copilot AI credits (engine <code>copilot</code>) or provider key</td></tr>
+      <tr><td>Agent write access</td><td>Whatever the job's token allows</td><td>Read-only; writes via safe outputs</td></tr>
+      <tr><td>Network egress</td><td>Runner default</td><td>Firewall allowlist</td></tr>
+      <tr><td>Spend cap per run</td><td>Your own logic</td><td><code>max-ai-credits</code></td></tr>
+      <tr><td>Usage reporting</td><td>CloudWatch / Bedrock metrics</td><td><code>gh aw logs</code>, <code>gh aw audit</code>, OTel</td></tr>
+    </tbody>
+  </table></div>
+  <p class="warn"><b>Not confirmed.</b> The gh-aw docs list the <code>claude</code> engine with an Anthropic API key; we haven't confirmed Bedrock authentication for it. Copilot BYOK lists Microsoft Foundry, OpenAI and Anthropic keys.</p>
+</section>
+
+<section id="skills">
+  <h2><span class="num">6</span>Skills and instructions from Claude Code</h2>
+  <p>Copilot discovers project skills in <code>.github/skills/</code>, <code>.claude/skills/</code> and <code>.agents/skills/</code>, and personal skills in <code>~/.copilot/skills/</code> and <code>~/.agents/skills/</code> (Visual Studio also reads <code>~/.claude/skills/</code>). Supported in Copilot CLI, the Copilot app, the cloud agent, code review and VS Code agent mode. Existing Claude Code skills work without moving.</p>
+  <pre><code>repo/
+  AGENTS.md                    <span class="cm"># Copilot reads this</span>
+  CLAUDE.md                    <span class="cm"># one line: @AGENTS.md  (Claude Code import)</span>
+  .claude/
+    skills/
+      ci-triage/
+        SKILL.md               <span class="cm"># read by Claude Code and Copilot</span>
+        scripts/parse-junit.py
+        reference/known-flakes.md</code></pre>
+  <div class="file">.claude/skills/ci-triage/SKILL.md</div>
+  <pre><button class="copy" type="button">Copy</button><code>---
+<span class="k">name</span>: ci-triage                <span class="cm"># lowercase, hyphens, matches the folder</span>
+<span class="k">description</span>: Diagnose a failed CI job from its log excerpt. Use when a GitHub Actions run fails.
+---
+
+1. Read only the failing step's excerpt.
+2. Check reference/known-flakes.md before proposing a fix.
+3. For JUnit output, run scripts/parse-junit.py instead of reading the XML.</code></pre>
+  <div class="da">
+    <div class="do"><h4>Do</h4><ul>
+      <li>Keep each skill in exactly one discovered folder</li>
+      <li>Single source for instructions: <code>AGENTS.md</code> + <code>@AGENTS.md</code> in <code>CLAUDE.md</code></li>
+      <li>Check <code>allowed-tools</code>: tool names differ (<code>Bash</code> vs <code>shell</code>)</li>
+      <li>Inspect what loads with <code>/context</code> in Copilot CLI</li>
+    </ul></div>
+    <div class="av"><h4>Avoid</h4><ul>
+      <li>Symlinking <code>.claude/skills</code> ↔ <code>.agents/skills</code>: Copilot scans both and may load each skill twice</li>
+      <li>Relying on symlinks at all: undocumented for skills, and Git on Windows may not create them (<code>core.symlinks</code>)</li>
+      <li>Pre-approving shell before reviewing the skill's scripts</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="tokens">
+  <h2><span class="num">7</span>Token accounting for skills</h2>
+  <p class="asked">If several people use the same skill, how are tokens counted?</p>
+  <p>Skills load progressively. The cost is per read, not per skill and not per user count.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Layer</th><th>Loaded</th><th>Billed</th></tr></thead>
+    <tbody>
+      <tr><td><code>name</code> + <code>description</code> of every discovered skill</td><td>On every request</td><td>Input tokens, usually cache reads after the first request</td></tr>
+      <tr><td>Full <code>SKILL.md</code></td><td>When the model selects the skill</td><td>Input tokens on that and following turns</td></tr>
+      <tr><td>Referenced files, script output</td><td>Only when read or run</td><td>Input tokens when read</td></tr>
+    </tbody>
+  </table></div>
+  <div class="formula">per_day ≈ users × requests × description_tokens + users × uses × skill_tokens<br>10 × 20 × 50 + 10 × 3 × 2,000 = 10,000 + 60,000 = 70,000 tokens</div>
+  <p>Counts differ between Claude Code and Copilot for the same skill: different tokenizers, system prompts, tool lists and cache behaviour. Measure in each tool rather than converting.</p>
+</section>
+
+<section id="metering">
+  <h2><span class="num">8</span>Measuring cost of a run</h2>
+  <p>The SDK exposes run-scoped consumption and per-model token metrics. Both are marked experimental in 1.0.19.</p>
+  <pre><button class="copy" type="button">Copy</button><code><span class="k">const</span> NANO_AIU_PER_CREDIT = <span class="n">1e9</span>;   <span class="cm">// same factor the SDK uses for maxAiCredits</span>
+
+<span class="k">const</span> detail  = <span class="k">await</span> session.workflow.getRunDetail(runId);
+<span class="cm">// detail.consumed: { nanoAiu, subagents, activeMs }   -> scoped to this run</span>
+<span class="k">const</span> metrics = <span class="k">await</span> session.rpc.usage.getMetrics();
+<span class="cm">// metrics.modelMetrics[model].usage: { inputTokens, cacheReadTokens,</span>
+<span class="cm">//   cacheWriteTokens, outputTokens, reasoningTokens }, .totalNanoAiu</span>
+<span class="cm">// metrics.agentMetrics[id]: { agentName, modelMetrics, totalNanoAiu }</span>
+
+console.log(<span class="s">"run credits:"</span>, detail.consumed.nanoAiu / NANO_AIU_PER_CREDIT);</code></pre>
+  <p>Measured live on the public Launch Rescue demo (3 agents, 30 s active), with a cost meter built this way:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Model</th><th class="r">Requests</th><th class="r">Input</th><th class="r">Cached</th><th class="r">Output</th><th class="r">AI credits</th></tr></thead>
+    <tbody>
+      <tr><td>GPT-6.1 Sol, reasoning max</td><td class="r">2</td><td class="r">2,351</td><td class="r">0</td><td class="r">1,234</td><td class="r">1.82</td></tr>
+      <tr><td>Sonnet 5.5, reasoning high</td><td class="r">1</td><td class="r">2,990</td><td class="r">0</td><td class="r">686</td><td class="r">1.43</td></tr>
+      <tr><td><b>Run total</b> (<code>consumed.nanoAiu</code>)</td><td class="r"></td><td class="r"></td><td class="r"></td><td class="r"></td><td class="r"><b>3.25</b></td></tr>
+    </tbody>
+  </table></div>
+  <p>Per-model credits sum to the run total, so workflow-owned agent usage is included in session metrics. GPT-6.1 Sol produced less visible output than Sonnet but cost more: max reasoning tokens are billed but don't appear in the output column. For gh-aw, the equivalent is <code>gh aw audit</code>; for interactive sessions, <code>/context</code> shows the current window.</p>
+</section>
+
+<section id="pays">
+  <h2><span class="num">9</span>Who pays: SDK authentication and billing</h2>
   <p class="asked">If I build an app on the Copilot SDK, does every user consume my tokens?</p>
-  <div class="body">
-    <div class="col"><div class="label">📘 In short</div>
-      <p>It depends on which credentials the app passes to the SDK.</p>
-      <div class="tbl"><table><thead><tr><th>Authentication</th><th>Who pays</th></tr></thead><tbody>
-        <tr><td>Your login, or a <code>GH_TOKEN</code> / <code>COPILOT_GITHUB_TOKEN</code></td><td>You, for every user</td></tr>
-        <tr><td>OAuth GitHub App with each user's token</td><td>Each user (needs a Copilot plan)</td></tr>
-        <tr><td>BYOK: Foundry, OpenAI, Anthropic keys</td><td>Your provider account</td></tr>
-      </tbody></table></div>
-      <div class="note"><span class="i">⚠️</span><span><b>Verify first.</b> gh-aw's Copilot engine uses <code>copilot-requests: write</code> or a <code>COPILOT_GITHUB_TOKEN</code> secret; the docs don't say which account is billed.</span></div>
-    </div>
-    <div class="col"><div class="label">✅ Rules of thumb</div>
-      <ul class="rules">
-        <li><span class="i">🚫</span><span><b>Never ship your own token</b> in an app other people use.</span></li>
-        <li><span class="i">🏢</span><span><b>Internal tool for Copilot users</b> → OAuth GitHub App.</span></li>
-        <li><span class="i">🌍</span><span><b>Public or customer-facing app</b> → BYOK, typically via Microsoft Foundry. Check the terms first.</span></li>
-      </ul>
-    </div>
-  </div>
-</article>
+  <p>Billing follows the credentials the app passes to the SDK.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Auth method</th><th>Usage billed to</th><th>Fits</th></tr></thead>
+    <tbody>
+      <tr><td>Signed-in user (stored <code>copilot</code> CLI OAuth)</td><td>That user</td><td>Local tools for yourself</td></tr>
+      <tr><td><code>COPILOT_GITHUB_TOKEN</code> / <code>GH_TOKEN</code> / <code>GITHUB_TOKEN</code></td><td>The token's owner, for every request the app makes</td><td>Automation you own; never a shared app</td></tr>
+      <tr><td>OAuth GitHub App passing each user's token</td><td>Each end user's Copilot allowance (needs a plan)</td><td>Internal tools for Copilot users</td></tr>
+      <tr><td>BYOK (Microsoft Foundry, OpenAI, Anthropic keys)</td><td>Your provider account; no GitHub auth</td><td>Public or customer-facing apps</td></tr>
+    </tbody>
+  </table></div>
+  <p class="warn"><b>Open question.</b> gh-aw's Copilot engine authenticates with <code>copilot-requests: write</code> or a <code>COPILOT_GITHUB_TOKEN</code> secret. The docs don't state which account is billed. BYOK supports key-based auth only (no Entra ID or managed identity). Check terms before building a public app on Copilot credits.</p>
+</section>
 
-<!-- 10 -->
-<article class="card" id="models" style="--c:var(--c-green)">
-  <div class="card-h"><span class="e">⚖️</span><div><div class="tag">Cost decisions</div><h2>Choosing a model</h2></div></div>
-  <div class="body">
-    <div class="col"><div class="label">📘 In short</div>
-      <p>Every token is billed at the model's API rate, so the model chosen per step is the biggest cost decision. Prices per 1M tokens (GitHub model pricing):</p>
-      <div class="tbl"><table><thead><tr><th>Model</th><th class="num">Input</th><th class="num">Cached</th><th class="num">Output</th></tr></thead><tbody>
-        <tr><td>🪶 Haiku 5.5 · GPT-6 Luna</td><td class="num">$0.10</td><td class="num">$0.01</td><td class="num">$0.50</td></tr>
-        <tr><td>⚙️ Sonnet 5 / 5.5</td><td class="num">$2.00</td><td class="num">$0.20</td><td class="num">$10.00</td></tr>
-        <tr><td>🧠 Opus 5.5</td><td class="num">$4.00</td><td class="num">$0.20</td><td class="num">$20.00</td></tr>
-      </tbody></table></div>
-      <div class="label" style="margin-top:14px">📈 A measured run (Launch Rescue demo, live)</div>
-      <div class="big">
-        <div class="stat"><div class="v">3.25</div><div class="l">AI credits total</div></div>
-        <div class="stat"><div class="v">1.82</div><div class="l">GPT-6.1 Sol, max reasoning</div></div>
-        <div class="stat"><div class="v">1.43</div><div class="l">Sonnet 5.5, high reasoning</div></div>
-        <div class="stat"><div class="v">0%</div><div class="l">Cache hits</div></div>
-      </div>
-    </div>
-    <div class="col"><div class="label">✅ Rules of thumb</div>
-      <ul class="rules">
-        <li><span class="i">🪜</span><span><b>Cheapest model that passes the checks.</b> Plan strong, execute small.</span></li>
-        <li><span class="i">🧠</span><span><b>Reasoning effort is a cost lever.</b> In the run above, the analyst wrote less than the reviewer and still cost more.</span></li>
-        <li><span class="i">🧊</span><span><b>Keep the prompt prefix stable</b> so repeated context is cached.</span></li>
-        <li><span class="i">2️⃣</span><span><b>Escalate after two failures</b> instead of retrying the same model.</span></li>
-        <li><span class="i">⚠️</span><span><b>Haiku 5.5 limits:</b> above 100K tokens per request the price rises about 5×, and its tokenizer counts about 30% more tokens.</span></li>
-      </ul>
-    </div>
+<section id="models">
+  <h2><span class="num">10</span>Model choice and price</h2>
+  <p>Usage-based billing charges every token at the model's API rate. Per 1M tokens, from GitHub's model pricing page:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Model</th><th class="r">Input</th><th class="r">Cached in</th><th class="r">Cache write</th><th class="r">Output</th><th>Typical step</th></tr></thead>
+    <tbody>
+      <tr><td>Haiku 5.5 · GPT-6 Luna</td><td class="r">$0.10</td><td class="r">$0.01</td><td class="r">$0.125</td><td class="r">$0.50</td><td>Log diagnosis, triage, tests from patterns</td></tr>
+      <tr><td>Sonnet 5 / 5.5</td><td class="r">$2.00</td><td class="r">$0.20</td><td class="r">$2.50</td><td class="r">$10.00</td><td>Planning, multi-file changes</td></tr>
+      <tr><td>Opus 5.5</td><td class="r">$4.00</td><td class="r">$0.20</td><td class="r">$5.00</td><td class="r">$20.00</td><td>Ambiguous design, high-risk changes</td></tr>
+    </tbody>
+  </table></div>
+  <div class="da">
+    <div class="do"><h4>Do</h4><ul>
+      <li>Cheapest model that passes the step's checks; escalate after two failures</li>
+      <li>Set <code>reasoningEffort</code> per step; reserve max for steps where it changes the outcome</li>
+      <li>Keep a stable prompt prefix (instructions, tool list) so it's served from cache</li>
+    </ul></div>
+    <div class="av"><h4>Watch</h4><ul>
+      <li>Haiku 5.5 above 100K tokens per request: price rises ~5×</li>
+      <li>Haiku 5.5 tokenizer counts ~30% more tokens for the same text</li>
+      <li>Long-context tiers (GPT-6 Luna above 272K tokens)</li>
+    </ul></div>
   </div>
-</article>
+</section>
 
-<!-- 11 -->
-<article class="card" id="reusable" style="--c:var(--c-slate)">
-  <div class="card-h"><span class="e">📁</span><div><div class="tag">Actions</div><h2>Subfolders for reusable workflows</h2></div></div>
-  <p class="asked">GitHub never added subfolders for reusable workflows.</p>
-  <div class="body">
-    <div class="col"><div class="label">📘 In short</div>
-      <p>Reusable workflows still have to live directly in <code>.github/workflows/</code>, and the request is marked as in the backlog.</p>
-    </div>
-    <div class="col"><div class="label">✅ Rules of thumb</div>
-      <ul class="rules">
-        <li><span class="i">🧱</span><span><b>Use composite actions for shared steps.</b> They can live in any path, e.g. <code>.github/actions/build/</code>.</span></li>
-        <li><span class="i">🪶</span><span><b>Keep reusable workflows thin</b>; put the logic in composite actions.</span></li>
-        <li><span class="i">📣</span><span><b>Raise it through your GitHub account team</b> to add weight.</span></li>
-      </ul>
-    </div>
-  </div>
-</article>
+<section id="reusable">
+  <h2><span class="num">11</span>Subfolders for reusable workflows</h2>
+  <p>Reusable workflows must still live directly in <code>.github/workflows/</code>; the feature request is in the backlog. Composite actions can live in any path, so move shared logic there and keep the reusable workflows thin.</p>
+  <pre><code>.github/
+  actions/
+    build/action.yml         <span class="cm"># runs: using: composite</span>
+    deploy/aws/action.yml
+  workflows/
+    reusable-build.yml       <span class="cm"># thin: calls ./.github/actions/build</span></code></pre>
+  <pre><code><span class="k">steps</span>:
+  - <span class="k">uses</span>: actions/checkout@v4
+  - <span class="k">uses</span>: ./.github/actions/build
+    <span class="k">with</span>:
+      <span class="k">target</span>: <span class="s">release</span></code></pre>
+</section>
 
-<!-- 12 -->
-<article class="card" id="poc" style="--c:var(--c-violet)">
-  <div class="card-h"><span class="e">🚀</span><div><div class="tag">Next step</div><h2>Suggested POC: CI Doctor in two weeks</h2></div></div>
-  <div class="body">
-    <div class="col"><div class="label">🗓️ Plan</div>
-      <ol>
-        <li><b>Before:</b> confirm Agentic Workflows are enabled and which account is billed. Note what your current Bedrock setup does.</li>
-        <li><b>Week 1:</b> narrow trigger, log-trimming step, small model. Run without tight caps.</li>
-        <li><b>Week 2:</b> set caps from week 1's usage, keep it running, review <code>gh aw audit</code> together.</li>
-      </ol>
-    </div>
-    <div class="col"><div class="label">📏 What to measure</div>
-      <ul class="rules">
-        <li><span class="i">🎯</span><span>Share of failures diagnosed correctly, judged by the engineer who fixed them</span></li>
-        <li><span class="i">⏱️</span><span>Time from failure to a useful diagnosis</span></li>
-        <li><span class="i">💳</span><span>AI credits per diagnosis and per week, next to the Bedrock cost of the same task</span></li>
-        <li><span class="i">✅</span><span>Proposed changes accepted versus rejected</span></li>
-      </ul>
-    </div>
-  </div>
-</article>
+<section id="poc">
+  <h2><span class="num">12</span>POC plan: CI Doctor, two weeks</h2>
+  <ol>
+    <li><b>Preconditions.</b> gh-aw enabled for the org; billing account for the Copilot engine confirmed; one repo and one CI pipeline chosen; baseline from any existing Bedrock workflow.</li>
+    <li><b>Week 1.</b> Deterministic excerpt step, failure-only trigger on <code>main</code>, small model, safe output limited to <code>create-issue</code>. No tight caps yet.</li>
+    <li><b>Week 2.</b> Set <code>max-ai-credits</code> / <code>max-turns</code> from week-1 p95 usage. Review <code>gh aw audit</code> together.</li>
+  </ol>
+  <div class="tbl"><table>
+    <thead><tr><th>Metric</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr><td>Diagnosis accuracy</td><td>Engineer who fixed the failure marks the issue correct / partly / wrong</td></tr>
+      <tr><td>Time to first useful diagnosis</td><td>Issue timestamp minus failed-run timestamp</td></tr>
+      <tr><td>AI credits per diagnosis, per week</td><td><code>gh aw audit</code>; compare with Bedrock cost for the same task</td></tr>
+      <tr><td>Acceptance rate of proposals</td><td>Issues acted on vs closed as not useful</td></tr>
+    </tbody>
+  </table></div>
 
-<footer>
-  <p><b>Sources</b></p>
-  <ul>
-    <li><a href="https://docs.github.com/en/copilot/concepts/agents/dynamic-workflows" target="_blank" rel="noreferrer">Dynamic workflows, GitHub Docs</a></li>
-    <li><a href="https://github.github.com/gh-aw/" target="_blank" rel="noreferrer">GitHub Agentic Workflows</a> and <a href="https://github.github.com/gh-aw/reference/engines/" target="_blank" rel="noreferrer">engine reference</a></li>
-    <li><a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/create-skills" target="_blank" rel="noreferrer">Creating agent skills, GitHub Docs</a></li>
-    <li><a href="https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing" target="_blank" rel="noreferrer">Models and pricing, GitHub Docs</a></li>
-    <li><a href="https://github.com/github/copilot-sdk" target="_blank" rel="noreferrer">GitHub Copilot SDK</a></li>
-    <li><a href="https://code.claude.com/docs/en/amazon-bedrock" target="_blank" rel="noreferrer">Claude Code on Amazon Bedrock</a></li>
-    <li><a href="https://github.com/msftnadavbh/workflows" target="_blank" rel="noreferrer">Launch Rescue dynamic-workflow demo</a></li>
-  </ul>
-  <p>Both workflow features are in public preview; prices, defaults and limits can change. Example figures are illustrative. Measure your own with <code>/context</code> and <code>gh aw audit</code>.</p>
-</footer>
+  <footer>
+    <p><b>References</b></p>
+    <ul>
+      <li><a href="https://docs.github.com/en/copilot/concepts/agents/dynamic-workflows" target="_blank" rel="noreferrer">Dynamic workflows: concepts</a> · <a href="https://github.com/github/copilot-sdk/blob/v1.0.19/nodejs/docs/workflows.md" target="_blank" rel="noreferrer">SDK workflow API (v1.0.19)</a></li>
+      <li><a href="https://github.github.com/gh-aw/" target="_blank" rel="noreferrer">GitHub Agentic Workflows</a> · <a href="https://github.github.com/gh-aw/reference/engines/" target="_blank" rel="noreferrer">engines reference</a></li>
+      <li><a href="https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/create-skills" target="_blank" rel="noreferrer">Creating agent skills</a></li>
+      <li><a href="https://docs.github.com/en/copilot/reference/copilot-billing/models-and-pricing" target="_blank" rel="noreferrer">Copilot models and pricing</a></li>
+      <li><a href="https://github.com/github/copilot-sdk" target="_blank" rel="noreferrer">GitHub Copilot SDK</a></li>
+      <li><a href="https://code.claude.com/docs/en/amazon-bedrock" target="_blank" rel="noreferrer">Claude Code on Amazon Bedrock</a></li>
+      <li><a href="https://github.com/msftnadavbh/workflows" target="_blank" rel="noreferrer">Launch Rescue dynamic-workflow demo</a></li>
+    </ul>
+    <p>Both workflow features are in public preview; APIs, defaults, limits and prices can change. Code samples are starting points; example figures are illustrative except where marked as measured.</p>
+  </footer>
+</section>
+</main>
 </div>
 
 <script>
 (function(){
-  document.getElementById("theme-btn").addEventListener("click",function(){
-    var r=document.documentElement, cur=r.getAttribute("data-theme");
-    var dark=cur?cur==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.getElementById("theme").addEventListener("click",function(){
+    var r=document.documentElement,c=r.getAttribute("data-theme");
+    var dark=c?c==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;
     r.setAttribute("data-theme",dark?"light":"dark");
   });
-  document.querySelectorAll(".copy").forEach(function(btn){
+  document.querySelectorAll("pre .copy").forEach(function(btn){
     btn.addEventListener("click",function(){
-      var el=document.getElementById(btn.getAttribute("data-copy"));
-      var select=function(){var s=window.getSelection(),r=document.createRange();r.selectNodeContents(el);s.removeAllRanges();s.addRange(r);};
-      var done=function(){btn.textContent="Copied";setTimeout(function(){btn.textContent="Copy";},1500);};
-      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(el.innerText).then(done,select);} else {select();}
+      var code=btn.parentElement.querySelector("code");
+      var sel=function(){var s=window.getSelection(),r=document.createRange();r.selectNodeContents(code);s.removeAllRanges();s.addRange(r);};
+      var ok=function(){btn.textContent="Copied";setTimeout(function(){btn.textContent="Copy";},1500);};
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(code.innerText).then(ok,sel);}else{sel();}
     });
   });
 })();
