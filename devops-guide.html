@@ -89,7 +89,7 @@ footer ul{padding-left:18px}
     <li><a href="#map">1. Four kinds of workflow</a></li>
     <li><a href="#auto">2. Model pinning and fallback</a></li>
     <li><a href="#dynamic">3. Dynamic Workflows</a></li>
-    <li><a class="sub" href="#dw-code">Minimal workflow</a></li>
+    <li><a class="sub" href="#dw-code">Pinning a model</a></li>
     <li><a class="sub" href="#dw-fallback">Fallback pattern</a></li>
     <li><a class="sub" href="#dw-gotchas">Runtime semantics</a></li>
     <li><a href="#ghaw">4. Agentic Workflows</a></li>
@@ -176,69 +176,23 @@ footer ul{padding-left:18px}
 <section id="dynamic">
   <h2><span class="num">3</span>Dynamic Workflows</h2>
   <p>A repository extension registers one or more workflows with <code>defineWorkflow</code> and <code>joinSession</code>. The CLI supplies the SDK to the extension process. The workflow body is ordinary async code with a context object exposing agents, parallel barriers, journaled steps, phases, logs, pause and cancellation.</p>
-  <pre><code>.github/
-  extensions/
-    migrate-module/
-      extension.mjs        <span class="cm"># defineWorkflow(...) + joinSession(...)</span>
-  agents/
-    planner.agent.md       <span class="cm"># optional profiles: prompt, tools, model</span>
-    implementer.agent.md</code></pre>
-  <pre><code><span class="cm"># run, observe, resume</span>
-copilot --experimental workflow run migrate-module --args @inputs/module-a.json
-<span class="cm"># inside a session: /workflows   (or the app's Workflows panel)</span></code></pre>
+  <pre><code>copilot --experimental workflow run migrate-module --args @inputs/module-a.json
+<span class="cm"># observe: /workflows in a session, or the app's Workflows panel</span></code></pre>
 
-  <h3 id="dw-code">Minimal workflow with a pinned model per step</h3>
-  <div class="file">.github/extensions/migrate-module/extension.mjs</div>
-  <pre><button class="copy" type="button">Copy</button><code><span class="k">import</span> { defineWorkflow, joinSession } <span class="k">from</span> <span class="s">"@github/copilot-sdk/extension"</span>;
-
-<span class="k">const</span> PLANNER = { model: <span class="s">"claude-sonnet-5.5"</span>, reasoningEffort: <span class="s">"high"</span> };
-<span class="k">const</span> WORKER  = { model: <span class="s">"&lt;small model id&gt;"</span>, reasoningEffort: <span class="s">"low"</span> };
-
-<span class="k">const</span> migrate = defineWorkflow({
-  meta: {
-    name: <span class="s">"migrate-module"</span>,
-    phases: [<span class="s">"Plan"</span>, <span class="s">"Implement"</span>, <span class="s">"Verify"</span>, <span class="s">"Approve"</span>].map((title) =&gt; ({ title })),
-    limits: { maxConcurrentSubagents: <span class="n">2</span>, maxTotalSubagents: <span class="n">10</span>, timeoutSeconds: <span class="n">1800</span> },
-  },
-  run: <span class="k">async</span> (ctx) =&gt; {
-    ctx.phase(<span class="s">"Plan"</span>);
-    <span class="cm">// ctx.step journals the JSON result under a versioned key; resume reuses it</span>
-    <span class="k">const</span> plan = <span class="k">await</span> ctx.step(<span class="s">"v1:plan"</span>, () =&gt;
-      ctx.agent(<span class="s">`Read PLAN.md and propose the steps for ${ctx.args.module}.`</span>,
-        { ...PLANNER, label: <span class="s">"plan"</span>, schema: PLAN_SCHEMA }));
-    <span class="k">if</span> (plan === <span class="k">null</span>) <span class="k">throw new</span> Error(<span class="s">"Planner returned nothing; stop, don't guess."</span>);
-
-    ctx.phase(<span class="s">"Implement"</span>);
-    <span class="k">const</span> results = <span class="k">await</span> ctx.parallel(plan.steps.map((s) =&gt; () =&gt;
-      ctx.step(<span class="s">`v1:impl:${s.id}`</span>, () =&gt;
-        ctx.agent(s.prompt, { ...WORKER, label: <span class="s">`impl-${s.id}`</span> }))));
-
-    ctx.phase(<span class="s">"Verify"</span>);
-    <span class="k">const</span> tests = <span class="k">await</span> ctx.step(<span class="s">"v1:tests"</span>, () =&gt; runTests());  <span class="cm">// deterministic code, no model</span>
-    <span class="k">if</span> (!tests.passed) <span class="k">throw new</span> Error(<span class="s">"Tests failed; candidate held."</span>);
-
-    ctx.phase(<span class="s">"Approve"</span>);
-    <span class="k">await</span> ctx.pause(<span class="s">"v1:approve"</span>);   <span class="cm">// durable checkpoint; a human resumes the same run</span>
-    <span class="k">return</span> { plan, results, tests };
-  },
-});
-
-<span class="k">await</span> joinSession({ workflows: [migrate] });</code></pre>
-  <p class="warn"><b>Illustrative.</b> Option names follow the SDK workflow docs for v1.0.19; <code>PLAN_SCHEMA</code> and <code>runTests</code> are yours. Check the SDK version you pin.</p>
+  <h3 id="dw-code">Pinning a model per step</h3>
+  <p>Each agent call carries its own model and reasoning effort. Wrap it in <code>ctx.step</code> so the result is saved and reused on resume.</p>
+  <pre><code><span class="k">const</span> plan = <span class="k">await</span> ctx.step(<span class="s">"v1:plan"</span>, () =&gt;
+  ctx.agent(<span class="s">"Read PLAN.md and list the steps."</span>,
+    { model: <span class="s">"claude-sonnet-5.5"</span>, reasoningEffort: <span class="s">"high"</span>, label: <span class="s">"plan"</span> }));
+<span class="k">await</span> ctx.pause(<span class="s">"v1:approve"</span>);   <span class="cm">// human checkpoint, same run resumes</span></code></pre>
 
   <h3 id="dw-fallback">Explicit fallback instead of Auto</h3>
-  <p>Try the primary model, fall back to a named same-tier model, and record which one actually resolved. The run detail exposes the agents that ran, so you can assert on the resolved model (the Launch Rescue demo does this before accepting any result).</p>
-  <pre><button class="copy" type="button">Copy</button><code><span class="k">const</span> CHAIN = [<span class="s">"claude-sonnet-5.5"</span>, <span class="s">"claude-sonnet-5"</span>];   <span class="cm">// same tier, chosen in advance</span>
-
-<span class="k">async function</span> agentWithFallback(ctx, prompt, opts) {
-  <span class="k">for</span> (<span class="k">const</span> model <span class="k">of</span> CHAIN) {
-    <span class="k">const</span> label = <span class="s">`${opts.label}:${model}`</span>;      <span class="cm">// distinct label: identical calls are memoized</span>
-    <span class="k">const</span> out = <span class="k">await</span> ctx.agent(prompt, { ...opts, model, label });
-    <span class="k">if</span> (out !== <span class="k">null</span>) { ctx.log(<span class="s">`resolved ${opts.label} on ${model}`</span>); <span class="k">return</span> out; }
-    ctx.log(<span class="s">`${model} returned no result; trying next`</span>);
-  }
-  <span class="k">await</span> ctx.pause(<span class="s">`v1:wait-for-model:${opts.label}`</span>);   <span class="cm">// nothing available: stop, resume later</span>
-}</code></pre>
+  <p>Try the primary model, then a same-tier fallback chosen in advance; if neither answers, pause instead of switching silently. Log which model resolved.</p>
+  <pre><code><span class="k">for</span> (<span class="k">const</span> model <span class="k">of</span> [<span class="s">"claude-sonnet-5.5"</span>, <span class="s">"claude-sonnet-5"</span>]) {
+  <span class="k">const</span> out = <span class="k">await</span> ctx.agent(prompt, { model, label: <span class="s">`fix:${model}`</span> });
+  <span class="k">if</span> (out !== <span class="k">null</span>) <span class="k">return</span> out;
+}
+<span class="k">await</span> ctx.pause(<span class="s">"v1:wait-for-model"</span>);</code></pre>
 
   <h3 id="dw-gotchas">Runtime semantics that matter</h3>
   <div class="tbl"><table>
@@ -288,42 +242,13 @@ copilot --experimental workflow run migrate-module --args @inputs/module-a.json
   <h3 id="ghaw-doctor">CI Doctor: diagnose failed runs</h3>
   <p class="asked">Our DevOps skill analyzes CI/CD and environment issues across Jira and GitHub Actions. Can we rebuild it?</p>
   <p>Event-driven version. The trigger is a completed CI run on <code>main</code>; the agent reads a trimmed failure excerpt, not the full log, and can only propose an issue.</p>
-  <div class="file">.github/workflows/ci-doctor.md</div>
-  <pre><button class="copy" type="button">Copy</button><code>---
-<span class="k">on</span>:
-  <span class="k">workflow_run</span>:
-    <span class="k">workflows</span>: [<span class="s">"CI"</span>]
-    <span class="k">types</span>: [completed]
-    <span class="k">branches</span>: [main]
-<span class="k">if</span>: <span class="s">${{ github.event.workflow_run.conclusion == 'failure' }}</span>
-<span class="k">permissions</span>:
-  <span class="k">contents</span>: read
-  <span class="k">actions</span>: read
-<span class="k">engine</span>:
-  <span class="k">id</span>: copilot
-  <span class="k">model</span>: <span class="s">&lt;small model id&gt;</span>
-  <span class="k">bare</span>: <span class="n">true</span>               <span class="cm"># skip AGENTS.md / custom instructions if not needed</span>
+  <div class="file">.github/workflows/ci-doctor.md (key fields)</div>
+  <pre><code><span class="k">on</span>: { <span class="k">workflow_run</span>: { <span class="k">workflows</span>: [<span class="s">"CI"</span>], <span class="k">types</span>: [completed], <span class="k">branches</span>: [main] } }
+<span class="k">engine</span>: { <span class="k">id</span>: copilot, <span class="k">model</span>: <span class="s">&lt;small model&gt;</span> }
 <span class="k">max-ai-credits</span>: <span class="s">&lt;~2x measured&gt;</span>
-<span class="k">max-turns</span>: <span class="s">&lt;~2x measured&gt;</span>
-<span class="k">safe-outputs</span>:
-  <span class="k">create-issue</span>:
-    <span class="k">title-prefix</span>: <span class="s">"[ci-doctor] "</span>
-    <span class="k">labels</span>: [ci, triage]
----
-
-# Diagnose the failed CI run
-
-Read `failure-excerpt.txt` (the failing step and the 200 lines before it).
-Identify the most likely root cause and the file or config responsible.
-If it matches a known flaky test listed in `docs/flaky.md`, say so and stop.
-Propose one issue with: cause, evidence (quote the lines), suggested fix.
-Do not modify code.</code></pre>
-  <pre><code><span class="cm"># compile, then commit both the .md and the generated .lock.yml</span>
-gh aw compile ci-doctor
-<span class="cm"># inspect cost and behaviour of recent runs</span>
-gh aw logs ci-doctor
-gh aw audit &lt;run-id&gt;</code></pre>
-  <p class="warn"><b>Verify against the current gh-aw schema.</b> Field names (<code>if</code>, <code>safe-outputs.create-issue</code> options) and how you add the pre-agent step that writes <code>failure-excerpt.txt</code> change between releases. Use <code>gh aw compile</code> errors as the source of truth.</p>
+<span class="k">safe-outputs</span>: { <span class="k">create-issue</span>: {} }   <span class="cm"># agent proposes, never writes</span></code></pre>
+  <p>Body, in plain language: read the failure excerpt, name the likely cause with quoted lines, check known flaky tests, propose one issue, don't modify code. Then <code>gh aw compile ci-doctor</code>, and inspect runs with <code>gh aw logs</code> / <code>gh aw audit</code>.</p>
+  <p class="warn"><b>Verify against the current gh-aw schema.</b> Field names change between releases; <code>gh aw compile</code> errors are the source of truth.</p>
 
   <h3 id="ghaw-cost">Cost model for event-driven agents</h3>
   <div class="formula">daily_cost ≈ runs_per_day × (prompt_tokens × in_price + output_tokens × out_price)</div>
@@ -372,24 +297,9 @@ gh aw audit &lt;run-id&gt;</code></pre>
 <section id="skills">
   <h2><span class="num">6</span>Skills and instructions from Claude Code</h2>
   <p>Copilot discovers project skills in <code>.github/skills/</code>, <code>.claude/skills/</code> and <code>.agents/skills/</code>, and personal skills in <code>~/.copilot/skills/</code> and <code>~/.agents/skills/</code> (Visual Studio also reads <code>~/.claude/skills/</code>). Supported in Copilot CLI, the Copilot app, the cloud agent, code review and VS Code agent mode. Existing Claude Code skills work without moving.</p>
-  <pre><code>repo/
-  AGENTS.md                    <span class="cm"># Copilot reads this</span>
-  CLAUDE.md                    <span class="cm"># one line: @AGENTS.md  (Claude Code import)</span>
-  .claude/
-    skills/
-      ci-triage/
-        SKILL.md               <span class="cm"># read by Claude Code and Copilot</span>
-        scripts/parse-junit.py
-        reference/known-flakes.md</code></pre>
-  <div class="file">.claude/skills/ci-triage/SKILL.md</div>
-  <pre><button class="copy" type="button">Copy</button><code>---
-<span class="k">name</span>: ci-triage                <span class="cm"># lowercase, hyphens, matches the folder</span>
-<span class="k">description</span>: Diagnose a failed CI job from its log excerpt. Use when a GitHub Actions run fails.
----
-
-1. Read only the failing step's excerpt.
-2. Check reference/known-flakes.md before proposing a fix.
-3. For JUnit output, run scripts/parse-junit.py instead of reading the XML.</code></pre>
+  <pre><code>AGENTS.md                        <span class="cm"># Copilot</span>
+CLAUDE.md                        <span class="cm"># one line: @AGENTS.md</span>
+.claude/skills/ci-triage/SKILL.md  <span class="cm"># read by both tools</span></code></pre>
   <div class="da">
     <div class="do"><h4>Do</h4><ul>
       <li>Keep each skill in exactly one discovered folder</li>
@@ -424,16 +334,9 @@ gh aw audit &lt;run-id&gt;</code></pre>
 <section id="metering">
   <h2><span class="num">8</span>Measuring cost of a run</h2>
   <p>The SDK exposes run-scoped consumption and per-model token metrics. Both are marked experimental in 1.0.19.</p>
-  <pre><button class="copy" type="button">Copy</button><code><span class="k">const</span> NANO_AIU_PER_CREDIT = <span class="n">1e9</span>;   <span class="cm">// same factor the SDK uses for maxAiCredits</span>
-
-<span class="k">const</span> detail  = <span class="k">await</span> session.workflow.getRunDetail(runId);
-<span class="cm">// detail.consumed: { nanoAiu, subagents, activeMs }   -> scoped to this run</span>
-<span class="k">const</span> metrics = <span class="k">await</span> session.rpc.usage.getMetrics();
-<span class="cm">// metrics.modelMetrics[model].usage: { inputTokens, cacheReadTokens,</span>
-<span class="cm">//   cacheWriteTokens, outputTokens, reasoningTokens }, .totalNanoAiu</span>
-<span class="cm">// metrics.agentMetrics[id]: { agentName, modelMetrics, totalNanoAiu }</span>
-
-console.log(<span class="s">"run credits:"</span>, detail.consumed.nanoAiu / NANO_AIU_PER_CREDIT);</code></pre>
+  <pre><code><span class="k">const</span> { consumed } = <span class="k">await</span> session.workflow.getRunDetail(runId);   <span class="cm">// this run</span>
+<span class="k">const</span> metrics = <span class="k">await</span> session.rpc.usage.getMetrics();             <span class="cm">// per model</span>
+<span class="k">const</span> credits = consumed.nanoAiu / <span class="n">1e9</span>;                              <span class="cm">// nano-AIU → AI credits</span></code></pre>
   <p>Measured live on the public Launch Rescue demo (3 agents, 30 s active), with a cost meter built this way:</p>
   <div class="tbl"><table>
     <thead><tr><th>Model</th><th class="r">Requests</th><th class="r">Input</th><th class="r">Cached</th><th class="r">Output</th><th class="r">AI credits</th></tr></thead>
@@ -490,17 +393,7 @@ console.log(<span class="s">"run credits:"</span>, detail.consumed.nanoAiu / NAN
 <section id="reusable">
   <h2><span class="num">11</span>Subfolders for reusable workflows</h2>
   <p>Reusable workflows must still live directly in <code>.github/workflows/</code>; the feature request is in the backlog. Composite actions can live in any path, so move shared logic there and keep the reusable workflows thin.</p>
-  <pre><code>.github/
-  actions/
-    build/action.yml         <span class="cm"># runs: using: composite</span>
-    deploy/aws/action.yml
-  workflows/
-    reusable-build.yml       <span class="cm"># thin: calls ./.github/actions/build</span></code></pre>
-  <pre><code><span class="k">steps</span>:
-  - <span class="k">uses</span>: actions/checkout@v4
-  - <span class="k">uses</span>: ./.github/actions/build
-    <span class="k">with</span>:
-      <span class="k">target</span>: <span class="s">release</span></code></pre>
+  <pre><code>- <span class="k">uses</span>: ./.github/actions/deploy/aws   <span class="cm"># composite action in a subfolder</span></code></pre>
 </section>
 
 <section id="poc">
