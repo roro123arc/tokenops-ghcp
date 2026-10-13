@@ -178,7 +178,7 @@ body.allhow .d2 .how{display:flex!important}
 
 <div class="bar">
   <div>
-    <h1>Token-smart GitHub Copilot · Check Point</h1>
+    <h1>Token-smart GitHub Copilot</h1>
     <p class="sub">Eight steps, in the order you meet them: read left to right, then top to bottom. Each card says <b>what</b> to do; the <b>How</b> box says where, when and exactly what to run or write. Short on time? Do the <b>⭐ must-do</b> cards first. Drag to pan, Ctrl + scroll to zoom.</p>
   </div>
   <span class="sp"></span>
@@ -216,7 +216,7 @@ body.allhow .d2 .how{display:flex!important}
       <dt><span class="rel do"><i></i>Practice</span></dt><dd>How you work.</dd>
       <dt><span class="rel tool"><i></i>Tool</span></dt><dd>What to run or query.</dd>
       <dt><span class="rel check"><i></i>Gate</span></dt><dd>How you prove quality held.</dd>
-      <dt><span class="rel data"><i></i>Our data</span></dt><dd>From Check Point's August usage.</dd>
+      <dt><span class="rel data"><i></i>Real data</span></dt><dd>From an enterprise engineering org's August usage (anonymized).</dd>
     </dl>
   </section>
 </aside>
@@ -254,13 +254,13 @@ const L={
  gpt6:["GPT-6 Luna and Sol","https://github.blog/changelog/2026-09-22-openais-gpt-6-sol-and-gpt-6-luna-now-available/"],
  hydra:["HydraFusion overview","https://www.marktechpost.com/2026/09/05/github-introduces-project-hydrafusion-runtime-multi-model-orchestration-that-builds-a-workflow-per-coding-task-in-copilot-cli/"]
 };
-const REL={do:"Practice",tool:"Tool",check:"Gate",data:"Our data"};
+const REL={do:"Practice",tool:"Tool",check:"Gate",data:"Real data"};
 const PH={p1:"🧭 Before you start",p2:"⚙️ During the task",p3:"✅ Before you merge",p4:"🔁 After, and ongoing"};
 /* d text: [[path]] = file, `x` = inline command.
    how items: at · when · file · code (file content) · cmd [text, prompt] · say · ui (A › B) · txt · li · step (numbered, with nested items) */
 const N=(id,t,o={},c=[])=>({id,t,...o,c});
 
-const TREE=N("core","Token-smart GitHub Copilot · Check Point",{d:"Spend tokens where they buy quality. Measure, set up the repo once, pick and orchestrate models per task, keep the cache warm, gate every saving, and keep it running."},[
+const TREE=N("core","Token-smart GitHub Copilot",{d:"Spend tokens where they buy quality. Measure, set up the repo once, pick and orchestrate models per task, keep the cache warm, gate every saving, and keep it running."},[
 
  N("s1","📏 Measure the baseline",{ph:"p1",tone:"foundry",d:"`/usage` shows one session. Get per-request, per-day and per-team views."},[
   N("s11","🔎 See what one request sends",{r:"tool",d:"In VS Code: the exact prompt, the context and the session's token total.",L:["debug"],how:[
