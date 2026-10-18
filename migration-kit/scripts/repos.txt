@@ -1,0 +1,7 @@
+# <prefix> <git url or local path>
+# The prefix is added to every skill name from that repo (ui-deploy, db-migrate ...)
+ui      git@github.com:ORG/ui.git
+docker  git@github.com:ORG/docker-onprem.git
+aws     git@github.com:ORG/aws-infra.git
+db      git@github.com:ORG/database.git
+azure   git@github.com:ORG/azure-infra.git

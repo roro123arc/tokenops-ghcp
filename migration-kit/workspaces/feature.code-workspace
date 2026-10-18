@@ -1,0 +1,16 @@
+{
+  // Open in VS Code: File > Open Workspace from File.
+  // One folder per repo, so Copilot sees every repo the feature needs - and only those.
+  // Remove the repos a feature does not touch.
+  "folders": [
+    { "path": "../central", "name": "central" },
+    { "path": "../ui", "name": "ui" },
+    { "path": "../docker-onprem", "name": "docker" },
+    { "path": "../aws-infra", "name": "aws" },
+    { "path": "../database", "name": "db" },
+    { "path": "../azure-infra", "name": "azure" }
+  ],
+  "settings": {
+    "chat.agent.enabled": true
+  }
+}

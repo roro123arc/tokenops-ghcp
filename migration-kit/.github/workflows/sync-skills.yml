@@ -1,0 +1,22 @@
+# Runs sync_skills.py in the central repo on a schedule and on demand,
+# so skills reach Copilot as committed files instead of a session-start hook.
+name: sync-skills
+on:
+  schedule: [{cron: "0 5 * * 1-5"}]   # weekdays 05:00 UTC
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Allow cloning the other repos
+        run: git config --global url."https://x-access-token:${{ secrets.SKILLS_SYNC_TOKEN }}@github.com/".insteadOf "git@github.com:"
+      - run: python3 scripts/sync_skills.py --repos scripts/repos.txt --workdir "$RUNNER_TEMP/repos" --central . --apply
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          branch: chore/sync-skills
+          title: "chore: sync skills from all repos"
+          commit-message: "chore: sync skills from all repos"
