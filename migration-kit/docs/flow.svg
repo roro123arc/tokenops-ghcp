@@ -1,0 +1,21 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 760 424' width='760' height='424' font-family='-apple-system,Segoe UI,Helvetica,Arial,sans-serif'>
+<rect width='760' height='424' fill='#FFFFFF'/>
+<defs><marker id='m' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto'><path d='M0 0L10 5L0 10z' fill='#9AA09A'/></marker></defs>
+<text x='24' y='34' font-size='15' font-weight='600' fill='#16202E'>The design is approved once, then subagents build in parallel</text>
+<g fill='none' stroke='#9AA09A' stroke-width='1.25'>
+<path d='M184 104H206' marker-end='url(#m)'/>
+<path d='M368 104H390' marker-end='url(#m)'/>
+<path d='M552 104H574' marker-end='url(#m)'/>
+<path d='M656 136V176H288V210' marker-end='url(#m)'/><path d='M472 176V210' marker-end='url(#m)'/><path d='M656 176V210' marker-end='url(#m)'/>
+<path d='M288 276V342' marker-end='url(#m)'/>
+<path d='M472 276V342' marker-end='url(#m)'/>
+<path d='M656 276V342' marker-end='url(#m)'/>
+</g>
+<rect x='24.0' y='72.0' width='160' height='64' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/><text x='104' y='100' text-anchor='middle' font-size='13' font-weight='600' fill='#16202E'>Pre-flight + design</text><text x='104' y='120' text-anchor='middle' font-size='11.5' fill='#5B6573'>preflight → architect</text>
+<rect x='208.0' y='72.0' width='160' height='64' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/><text x='288' y='100' text-anchor='middle' font-size='13' font-weight='600' fill='#16202E'>Feature story</text><text x='288' y='120' text-anchor='middle' font-size='11.5' fill='#5B6573'>Issue + sub-issues</text>
+<rect x='392.0' y='72.0' width='160' height='64' rx='8' fill='#E6EEFB' stroke='#2F6FD6' stroke-width='2'/><text x='472' y='100' text-anchor='middle' font-size='13' font-weight='600' fill='#16202E'>Human approval</text><text x='472' y='120' text-anchor='middle' font-size='11.5' fill='#16202E'>handoff, send: false</text>
+<rect x='576.0' y='72.0' width='160' height='64' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/><text x='656' y='100' text-anchor='middle' font-size='13' font-weight='600' fill='#16202E'>Orchestrator</text><text x='656' y='120' text-anchor='middle' font-size='11.5' fill='#5B6573'>runs the task list</text>
+<rect x='208.0' y='212.0' width='160' height='64' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/><text x='288' y='240' text-anchor='middle' font-size='13' font-weight='600' fill='#16202E'>UI agent</text><text x='288' y='260' text-anchor='middle' font-size='11.5' fill='#5B6573'>UI repo</text>
+<rect x='392.0' y='212.0' width='160' height='64' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/><text x='472' y='240' text-anchor='middle' font-size='13' font-weight='600' fill='#16202E'>Data agent</text><text x='472' y='260' text-anchor='middle' font-size='11.5' fill='#5B6573'>Database repo</text>
+<rect x='576.0' y='212.0' width='160' height='64' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/><text x='656' y='240' text-anchor='middle' font-size='13' font-weight='600' fill='#16202E'>Infra agent</text><text x='656' y='260' text-anchor='middle' font-size='11.5' fill='#5B6573'>Docker, AWS, Azure repos</text>
+<rect x='208' y='344' width='528' height='56' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/><text x='472' y='368' text-anchor='middle' font-size='13' font-weight='600' fill='#16202E'>Review and merge</text><text x='472' y='386' text-anchor='middle' font-size='11.5' fill='#5B6573'>one PR per repo, so no two agents edit the same file</text></svg>

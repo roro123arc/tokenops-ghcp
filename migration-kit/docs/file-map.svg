@@ -1,0 +1,44 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 760 564' width='760' height='564' font-family='-apple-system,Segoe UI,Helvetica,Arial,sans-serif' font-size='12.5'>
+<rect width='760' height='564' fill='#FFFFFF'/>
+<defs><marker id='a' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto'><path d='M0 0L10 5L0 10z' fill='#2F6FD6'/></marker><marker id='h' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto'><path d='M0 0L10 5L0 10z' fill='#E0A21B'/></marker></defs>
+<text x='24' y='32' font-size='15' font-weight='600' fill='#16202E'>migrate_repo.py makes six of the nine moves; three are rewritten by hand</text>
+<line x1='24' y1='52' x2='48' y2='52' stroke='#2F6FD6' stroke-width='1.5'/><text x='54' y='56' font-size='11.5' fill='#5B6573'>migrate_repo.py</text>
+<line x1='164' y1='52' x2='188' y2='52' stroke='#E0A21B' stroke-width='1.5' stroke-dasharray='5 4'/><text x='194' y='56' font-size='11.5' fill='#5B6573'>by hand</text>
+<text x='24' y='96' font-size='13' font-weight='600' fill='#16202E'>Claude Code today</text><text x='460' y='96' font-size='13' font-weight='600' fill='#16202E'>GitHub Copilot</text>
+<rect x='24' y='112.0' width='276' height='32' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/>
+<rect x='460' y='112.0' width='276' height='32' rx='8' fill='#E6EEFB' stroke='#2F6FD6' stroke-width='1.5'/>
+<path d='M300 128H458' stroke='#2F6FD6' stroke-width='1.5' fill='none'  marker-end='url(#a)'/>
+<text x='36' y='132' fill='#16202E'>CLAUDE.md (every folder)</text><text x='472' y='132' fill='#16202E'>AGENTS.md next to it</text>
+<rect x='24' y='156.0' width='276' height='32' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/>
+<rect x='460' y='156.0' width='276' height='32' rx='8' fill='#E6EEFB' stroke='#2F6FD6' stroke-width='1.5'/>
+<path d='M300 172H458' stroke='#2F6FD6' stroke-width='1.5' fill='none'  marker-end='url(#a)'/>
+<text x='36' y='176' fill='#16202E'>@imports inside CLAUDE.md</text><text x='472' y='176' fill='#16202E'>inlined into AGENTS.md</text>
+<rect x='24' y='200.0' width='276' height='32' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/>
+<rect x='460' y='200.0' width='276' height='32' rx='8' fill='#E6EEFB' stroke='#2F6FD6' stroke-width='1.5'/>
+<path d='M300 216H458' stroke='#2F6FD6' stroke-width='1.5' fill='none'  marker-end='url(#a)'/>
+<text x='36' y='220' fill='#16202E'>.claude/skills/name</text><text x='472' y='220' fill='#16202E'>.github/skills/repo-name</text>
+<rect x='24' y='244.0' width='276' height='32' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/>
+<rect x='460' y='244.0' width='276' height='32' rx='8' fill='#E6EEFB' stroke='#2F6FD6' stroke-width='1.5'/>
+<path d='M300 260H458' stroke='#2F6FD6' stroke-width='1.5' fill='none'  marker-end='url(#a)'/>
+<text x='36' y='264' fill='#16202E'>.claude/agents/*.md</text><text x='472' y='264' fill='#16202E'>.github/agents/*.agent.md</text>
+<rect x='24' y='288.0' width='276' height='32' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/>
+<rect x='460' y='288.0' width='276' height='32' rx='8' fill='#E6EEFB' stroke='#2F6FD6' stroke-width='1.5'/>
+<path d='M300 304H458' stroke='#2F6FD6' stroke-width='1.5' fill='none'  marker-end='url(#a)'/>
+<text x='36' y='308' fill='#16202E'>.claude/commands/*.md</text><text x='472' y='308' fill='#16202E'>.github/prompts/*.prompt.md</text>
+<rect x='24' y='332.0' width='276' height='32' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/>
+<rect x='460' y='332.0' width='276' height='32' rx='8' fill='#E6EEFB' stroke='#2F6FD6' stroke-width='1.5'/>
+<path d='M300 348H458' stroke='#2F6FD6' stroke-width='1.5' fill='none'  marker-end='url(#a)'/>
+<text x='36' y='352' fill='#16202E'>.mcp.json</text><text x='472' y='352' fill='#16202E'>.vscode/mcp.json</text>
+<rect x='24' y='376.0' width='276' height='32' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/>
+<rect x='460' y='376.0' width='276' height='32' rx='8' fill='#FFFFFF' stroke='#E0A21B' stroke-width='1.5'/>
+<path d='M300 392H458' stroke='#E0A21B' stroke-width='1.5' fill='none' stroke-dasharray="5 4" marker-end='url(#h)'/>
+<text x='36' y='396' fill='#16202E'>SessionStart hook (skill sync)</text><text x='472' y='396' fill='#16202E'>CI sync + preflight agent</text>
+<rect x='24' y='420.0' width='276' height='32' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/>
+<rect x='460' y='420.0' width='276' height='32' rx='8' fill='#FFFFFF' stroke='#E0A21B' stroke-width='1.5'/>
+<path d='M300 436H458' stroke='#E0A21B' stroke-width='1.5' fill='none' stroke-dasharray="5 4" marker-end='url(#h)'/>
+<text x='36' y='440' fill='#16202E'>permissions allow / deny</text><text x='472' y='440' fill='#16202E'>tool approvals, --allow-tool</text>
+<rect x='24' y='464.0' width='276' height='32' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/>
+<rect x='460' y='464.0' width='276' height='32' rx='8' fill='#FFFFFF' stroke='#E0A21B' stroke-width='1.5'/>
+<path d='M300 480H458' stroke='#E0A21B' stroke-width='1.5' fill='none' stroke-dasharray="5 4" marker-end='url(#h)'/>
+<text x='36' y='484' fill='#16202E'>default model in settings.json</text><text x='472' y='484' fill='#16202E'>model: in each .agent.md</text>
+<text x='24' y='548' font-size='11.5' fill='#5B6573'>Nothing under .claude/ is deleted, so Claude Code keeps working while you test.</text></svg>
