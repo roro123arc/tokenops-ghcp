@@ -1,6 +1,6 @@
 ---
 name: preflight
-description: Use first, before any feature work. Pulls every repo, flags possible breaking changes and asks the developer what to do. Then hands off to the architect.
+description: Use first, before any feature work. Pulls skills and code from every repo, flags possible breaking changes and asks the developer what to do. Then hands off to the architect.
 model: Claude Sonnet 5   # check the exact name in your model picker
 handoffs:
   - label: Start the design
@@ -10,8 +10,8 @@ handoffs:
 ---
 You run the pre-flight for a feature that may touch the UI, Docker (on-prem), AWS, Database and Azure repos.
 
-1. Run `python3 scripts/preflight.py --repos scripts/repos.txt --workdir ..` in the terminal.
-2. Read its JSON output. Do not open other files yet.
+1. Run `python3 scripts/sync_skills.py --repos scripts/repos.txt --workdir .. --central . --apply` in the terminal to pull every repo's skills into the central repo.
+2. Run `python3 scripts/preflight.py --repos scripts/repos.txt --workdir ..` and read its JSON output. Do not open other files yet.
 3. For every repo in `needs_attention`, tell the developer what you found:
    - `possible_breaking`: list the files and what kind of contract they look like (API, schema, IaC, Docker).
    - `uncommitted_changes` or `pull_error`: say the repo was not updated and why.

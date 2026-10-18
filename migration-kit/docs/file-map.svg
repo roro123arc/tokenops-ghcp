@@ -32,7 +32,7 @@
 <rect x='24' y='376.0' width='276' height='32' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/>
 <rect x='460' y='376.0' width='276' height='32' rx='8' fill='#FFFFFF' stroke='#E0A21B' stroke-width='1.5'/>
 <path d='M300 392H458' stroke='#E0A21B' stroke-width='1.5' fill='none' stroke-dasharray="5 4" marker-end='url(#h)'/>
-<text x='36' y='396' fill='#16202E'>SessionStart hook (skill sync)</text><text x='472' y='396' fill='#16202E'>CI sync + preflight agent</text>
+<text x='36' y='396' fill='#16202E'>SessionStart hook (skill sync)</text><text x='472' y='396' fill='#16202E'>preflight agent, every run</text>
 <rect x='24' y='420.0' width='276' height='32' rx='8' fill='none' stroke='#B9BDB5' stroke-width='1.25'/>
 <rect x='460' y='420.0' width='276' height='32' rx='8' fill='#FFFFFF' stroke='#E0A21B' stroke-width='1.5'/>
 <path d='M300 436H458' stroke='#E0A21B' stroke-width='1.5' fill='none' stroke-dasharray="5 4" marker-end='url(#h)'/>

@@ -16,7 +16,7 @@ Most files are read as they are; a few move; three need a rewrite by hand. The s
 | `.claude/agents/*.md` | `.github/agents/<name>.agent.md` | script; add `model:`, map tool names |
 | `.claude/commands/*.md` | `.github/prompts/<name>.prompt.md` | script; `$ARGUMENTS` → `${input:args}` |
 | `.mcp.json` | `.vscode/mcp.json` (VS Code), `~/.copilot/mcp-config.json` (CLI) | script for VS Code |
-| `SessionStart` hook (skill sync) | CI sync + `preflight` agent | kit files below |
+| `SessionStart` hook (skill sync) | `preflight` agent, before every run | kit files below |
 | `permissions` allow / deny | VS Code tool approvals, CLI `--allow-tool` / `--deny-tool` | by hand |
 | default `model` | `model:` in each `.agent.md` | by hand |
 
@@ -63,10 +63,10 @@ Measure credits per finished task, not prompts per task.
 | Stage | File | When |
 | --- | --- | --- |
 | Migrate a repo | `scripts/migrate_repo.py` | once per repo, dry run first |
-| Collect skills | `scripts/sync_skills.py` + `.github/workflows/sync-skills.yml` | daily in CI, opens a PR |
+| Collect skills | `scripts/sync_skills.py` | before every run, called by the preflight agent (optional: `.github/workflows/sync-skills.yml` runs it daily in CI) |
 | Open the right repos | `workspaces/feature.code-workspace` | per feature |
 | Start a feature | `.github/prompts/new-feature.prompt.md` (`/new-feature`) | every feature |
-| Pre-flight | `.github/agents/preflight.agent.md` + `scripts/preflight.py` | start of every feature |
+| Pre-flight | `.github/agents/preflight.agent.md` + `scripts/preflight.py` | start of every feature: skills sync, git pull, breaking changes, questions |
 | Design + story | `.github/agents/architect.agent.md` | after pre-flight |
 | Implement | `.github/agents/orchestrator.agent.md` → `ui`, `data`, `infra` | after approval |
 | Implement in the CLI | `.github/prompts/fleet-implement.prompt.md` with `/fleet` | instead of the orchestrator |
@@ -83,7 +83,7 @@ python3 scripts/sync_skills.py --repos scripts/repos.txt --workdir .. --central 
 python3 scripts/preflight.py --repos scripts/repos.txt --workdir ..
 ```
 
-Nothing under `.claude/` is deleted, so Claude Code keeps working while you test. The CI workflow needs a `SKILLS_SYNC_TOKEN` secret with read access to the repos. Model names in the agent files are examples; check the exact names in your model picker.
+Nothing under `.claude/` is deleted, so Claude Code keeps working while you test. The optional CI workflow needs a `SKILLS_SYNC_TOKEN` secret with read access to the repos. Model names in the agent files are examples; check the exact names in your model picker.
 
 ## 6. Checklist on one repo before rollout
 
