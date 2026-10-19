@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>מילון הרשאות סוכנים</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800&family=Heebo:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one vertical timeline of the work stages; each stage shows Copilot (right) and Claude Code (left) side by side */
+:root{
+  --bg:#F3F5F7; --surface:#FFFFFF; --ink:#14202B; --muted:#5A6874; --line:#DCE2E7;
+  --accent:#0E7C86; --accent-soft:#E0F2F3; --cc:#B4562B; --cc-soft:#F8E9E1;
+  --safe:#2E8B57; --mid:#C98A12; --risk:#C6372E; --warn-soft:#FBF1DC; --code-bg:#EEF1F4;
+  color-scheme:light; --display:"Rubik","Heebo",system-ui,sans-serif; --body:"Heebo",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.6;direction:rtl;text-align:right}
+.wrap{max-width:1000px;margin:0 auto;padding-block:40px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:32px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:clamp(28px,4.4vw,40px);font-weight:800}
+h2{font-size:21px;font-weight:700}
+p{margin:0}
+.lead{color:var(--muted);max-width:64ch;font-size:16.5px}
+code{font-family:var(--mono);font-size:.82em;background:var(--code-bg);padding:1px 6px;border-radius:5px;direction:ltr;unicode-bidi:isolate;display:inline-block;white-space:nowrap}
+.tag{font-family:var(--display);font-weight:700;font-size:12.5px;letter-spacing:.04em;padding:3px 10px;border-radius:999px;display:inline-block;white-space:nowrap}
+.t-gh{background:var(--accent-soft);color:var(--accent)}
+.t-cc{background:var(--cc-soft);color:var(--cc)}
+
+/* timeline */
+.timeline{display:flex;flex-direction:column;gap:0}
+.stage{display:grid;grid-template-columns:56px minmax(0,1fr);gap:0 16px}
+.rail{display:flex;flex-direction:column;align-items:center}
+.num{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:var(--surface);border:2px solid var(--c);flex:none}
+.rail::after{content:"";flex:1;width:3px;background:linear-gradient(var(--c),var(--c2,var(--c)));opacity:.45;margin-top:4px}
+.stage:last-child .rail::after{display:none}
+.body{padding-bottom:30px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.stitle{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding-top:10px}
+.stitle .step{font-family:var(--display);font-size:12.5px;font-weight:700;color:var(--c);letter-spacing:.06em}
+.q{color:var(--muted);font-size:14.5px}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.side{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.side.gh{border-inline-start:4px solid var(--accent)}
+.side.cc{border-inline-start:4px solid var(--cc)}
+.opt{display:flex;flex-direction:column;gap:1px}
+.opt .n{font-family:var(--display);font-weight:700;font-size:15px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.opt .d{color:var(--muted);font-size:13.5px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--r);display:inline-block;flex:none}
+.none{color:var(--muted);font-size:14px;font-style:italic}
+.match{font-size:13px;color:var(--muted);display:flex;gap:6px 14px;flex-wrap:wrap}
+.match span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+.warn{background:var(--warn-soft);border-radius:10px;padding:10px 14px;font-size:14px;display:flex;gap:8px;align-items:flex-start}
+.warn b{font-family:var(--display)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.budget{display:flex;flex-direction:column;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}
+.budget .side{background:var(--bg)}
+.bars{display:flex;flex-direction:column;gap:6px;overflow-x:auto}
+.br{display:grid;grid-template-columns:210px minmax(120px,1fr) 104px 64px;gap:12px;align-items:center;font-size:14px;min-width:460px}
+.bh{color:var(--muted);font-size:12.5px}
+.bm{font-family:var(--display);font-weight:700;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.bt{position:relative;height:22px;background:var(--bg);border-radius:6px;display:flex;align-items:center}
+.bf{position:absolute;inset-block:0;inset-inline-start:0;border-radius:6px;opacity:.85}
+.bf.gh{background:var(--accent)}.bf.cc{background:var(--cc)}
+.bt b{position:relative;margin-inline-start:8px;font-size:12.5px;color:#fff;font-variant-numeric:tabular-nums}
+.bp,.bc{direction:ltr;unicode-bidi:isolate;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.vd{width:10px;height:10px;border-radius:3px;display:inline-block;flex:none}
+.vd.gh{background:var(--accent)}.vd.cc{background:var(--cc)}
+.br.luna{background:var(--warn-soft);border-radius:8px;padding:4px 6px;margin-inline:-6px}
+.br.luna .bc{color:var(--ink);font-weight:700}
+.bt.nb{background:transparent}.bt.nb b{color:var(--muted)}
+.br.sep{padding-top:8px;border-top:1px dashed var(--line)}
+.am{display:flex;flex-direction:column;gap:6px}
+.ar{display:grid;grid-template-columns:150px minmax(0,1fr) minmax(0,1.3fr);gap:12px;align-items:center;background:var(--bg);border-radius:10px;padding:10px 14px}
+.ar.ah{background:transparent;padding-block:0;color:var(--muted);font-size:13px}
+.ar.ah .tag{justify-self:start}
+.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block;font-weight:700}
+.an{font-family:var(--display);font-weight:700;display:flex;align-items:center;gap:6px}
+.ad{color:var(--muted);font-size:14px}
+.ac{font-size:14px;min-width:0}
+@media (max-width:640px){.ar{grid-template-columns:1fr 1fr}.ar .ac{grid-column:1/-1}.ar.ah span:nth-child(2){display:none}}
+.br.na{opacity:.55;filter:grayscale(1)}
+.nat{font-family:var(--body);font-weight:500;font-size:11.5px;background:var(--line);color:var(--muted);border-radius:999px;padding:0 8px}
+@media (max-width:640px){.bars{overflow:visible}.br{min-width:0;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"m p c" "t t t";gap:4px 10px;padding-block:4px}.bm{grid-area:m}.bp{grid-area:p}.bc{grid-area:c}.bt{grid-area:t}.bh{display:none}.bp::before{content:"💵 "}.bc::before{content:"💾 "}}
+.fine{color:var(--muted);font-size:13px}
+footer{color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:16px}
+footer a{color:var(--accent)}
+@media (max-width:640px){
+  .pair{grid-template-columns:1fr}
+  .stage{grid-template-columns:40px minmax(0,1fr);gap:0 12px}
+  .num{width:38px;height:38px;font-size:18px}
+}
+</style>
+</head><body>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="tag t-gh">GitHub Copilot</span><span class="tag t-cc">Claude Code</span></div>
+    <h1>מילון הרשאות סוכנים</h1>
+    <div class="legend"><span><i class="dot" style="--r:var(--safe)"></i>מבוקר</span><span><i class="dot" style="--r:var(--mid)"></i>חצי אוטומטי</span><span><i class="dot" style="--r:var(--risk)"></i>בלי לשאול</span></div>
+  </header>
+
+  <div class="timeline">
+
+    <div class="stage" style="--c:var(--accent);--c2:var(--safe)">
+      <div class="rail"><span class="num">🤖</span></div>
+      <div class="body">
+        <div class="stitle"><span class="step">שלב 1</span><h2>בחירת מודל</h2></div>
+        
+        <div class="pair">
+          <div class="side gh"><span class="tag t-gh">Copilot</span>
+            <div class="opt"><span class="n">Auto</span><span class="d">בוחר מודל לכל בקשה: Efficiency · Balance · Intelligence</span></div>
+            <div class="opt"><span class="n">ידני</span><span class="d">מודל ורמת חשיבה קבועים</span></div>
+          </div>
+          <div class="side cc"><span class="tag t-cc">Claude Code</span>
+            <div class="opt"><span class="n"><code>/model</code></span><span class="d">תמיד ידני. רמת חשיבה עם <code>/effort</code></span></div>
+            <div class="opt"><span class="n"><code>opusplan</code></span><span class="d">Opus בתכנון, Sonnet בביצוע</span></div>
+          </div>
+        </div>
+        <div class="warn">⚠️<span><b>Auto</b>: ב־Copilot זה מודל, ב־Claude Code זו הרשאה (שלב 4)</span></div>
+      </div>
+    </div>
+
+    <div class="stage" style="--c:var(--safe)">
+      <div class="rail"><span class="num">🗺️</span></div>
+      <div class="body">
+        <div class="stitle"><span class="step">שלב 2</span><h2>תכנון</h2></div>
+        
+        <div class="pair">
+          <div class="side gh"><span class="tag t-gh">Copilot</span>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--safe)"></i>Ask</span><span class="d">עונה, לא משנה קבצים</span></div>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--safe)"></i>Plan</span><span class="d">תוכנית, ביצוע רק אחרי אישור</span></div>
+          </div>
+          <div class="side cc"><span class="tag t-cc">Claude Code</span>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--safe)"></i>Plan mode</span><span class="d">תוכנית, עריכה רק אחרי אישור</span></div>
+          </div>
+        </div>
+        <div class="match"><span>Plan ↔ Plan mode</span></div>
+        <div class="warn">⚠️<span><b>Ask</b>: ב־Copilot זה מצב צ'אט, ב־Claude Code זה כלל הרשאה</span></div>
+      </div>
+    </div>
+
+    <div class="stage" style="--c:var(--safe);--c2:var(--mid)">
+      <div class="rail"><span class="num">✅</span></div>
+      <div class="body">
+        <div class="stitle"><span class="step">שלב 3</span><h2>האם הוא עוצר לחכות לך</h2></div>
+        
+        <div class="pair">
+          <div class="side gh"><span class="tag t-gh">Copilot</span>
+            <div class="opt"><span class="n">Interactive</span><span class="d">עוצר אחרי כל צעד</span></div>
+            <div class="opt"><span class="n">Autopilot</span><span class="d">רץ לבד עד הסוף</span></div>
+          </div>
+          <div class="side cc"><span class="tag t-cc">Claude Code</span>
+            <div class="opt"><span class="n">באישור התוכנית</span><span class="d">בוחרים את מצב ההרשאות להמשך</span></div>
+            <div class="opt"><span class="none">אין מצב Autopilot נפרד</span></div>
+          </div>
+        </div>
+        <div class="warn">⚠️<span><b>Autopilot</b> הוא לא הרשאה</span></div>
+      </div>
+    </div>
+
+    <div class="stage" style="--c:var(--mid);--c2:var(--risk)">
+      <div class="rail"><span class="num">🔐</span></div>
+      <div class="body">
+        <div class="stitle"><span class="step">שלב 4</span><h2>מה מותר בלי לשאול</h2></div>
+        
+        <div class="pair">
+          <div class="side gh"><span class="tag t-gh">Copilot</span>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--safe)"></i>Manual</span><span class="d">שואל על הכול</span></div>
+            <div class="opt"><span class="none">אין מצב לעריכות בלבד</span></div>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--mid)"></i>Assisted <span class="tag t-gh" style="font-size:11px">ניסיוני</span></span><span class="d">שואל רק על מסוכן</span></div>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--risk)"></i>Allow all</span><span class="d">לא שואל</span></div>
+          </div>
+          <div class="side cc"><span class="tag t-cc">Claude Code</span>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--safe)"></i>Manual <code>default</code></span><span class="d">שואל על הכול חוץ מקריאה</span></div>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--mid)"></i>acceptEdits</span><span class="d">עריכות חופשיות, פקודות שואל</span></div>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--mid)"></i>Auto mode</span><span class="d">מודל מאשר במקומך</span></div>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--risk)"></i>bypassPermissions</span><span class="d">לא שואל. רק בקונטיינר</span></div>
+          </div>
+        </div>
+        <div class="match"><span>Manual ↔ Manual</span><span>Assisted ↔ Auto mode</span><span>Allow all ↔ bypassPermissions</span></div>
+      </div>
+    </div>
+
+    <div class="stage" style="--c:var(--risk)">
+      <div class="rail"><span class="num">🔥</span></div>
+      <div class="body">
+        <div class="stitle"><span class="step">שלב 5</span><h2>ריצה בלי אדם (CI)</h2></div>
+        
+        <div class="pair">
+          <div class="side gh"><span class="tag t-gh">Copilot CLI</span>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--mid)"></i><code>--allow-tool</code></span><span class="d">רק כלים מאושרים מראש</span></div>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--risk)"></i>YOLO mode</span><span class="d"><code>--yolo</code> = <code>--allow-all</code></span></div>
+          </div>
+          <div class="side cc"><span class="tag t-cc">Claude Code</span>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--mid)"></i>dontAsk</span><span class="d">רק כלים מאושרים מראש</span></div>
+            <div class="opt"><span class="n"><i class="dot" style="--r:var(--risk)"></i><code>--dangerously-skip-permissions</code></span><span class="d">= bypassPermissions</span></div>
+          </div>
+        </div>
+        <div class="match"><span>--allow-tool ↔ dontAsk</span><span>YOLO mode ↔ --dangerously-skip-permissions</span></div>
+        <div class="warn">🛡️<span>בלי שאלות = רק עם Sandbox או בקונטיינר</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <section class="budget" aria-labelledby="sb">
+    <div class="stitle" style="padding-top:0"><span class="step" style="color:var(--accent)">לאורך כל השלבים</span><h2 id="sb">💰 תקרת עלות</h2></div>
+    
+    <div class="pair">
+      <div class="side gh"><span class="tag t-gh">Copilot</span>
+        <div class="opt"><span class="n"><code>/limits set max-ai-credits 50</code></span><span class="d">תקרה לסשן (מינימום 30)</span></div>
+        <div class="opt"><span class="n"><code>max-ai-credits</code> ב־Agentic Workflows</span><span class="d">תקרה לכל ריצה ב־Actions</span></div>
+        <div class="opt"><span class="n">תקציבים ומרכזי עלות</span><span class="d">לכל צוות או ארגון</span></div>
+      </div>
+      <div class="side cc"><span class="tag t-cc">Claude Code</span>
+        <div class="opt"><span class="n"><code>--max-budget-usd 5</code></span><span class="d">תקרה לריצה עם <code>-p</code></span></div>
+        <div class="opt"><span class="n"><code>total_cost_usd</code></span><span class="d">עלות הריצה בפלט JSON</span></div>
+        <div class="opt"><span class="n"><code>/usage</code></span><span class="d">צריכה בסשן</span></div>
+      </div>
+    </div>
+    <div class="match"><span>max-ai-credits ↔ --max-budget-usd</span></div>
+    <div class="warn">🔥<span>‏YOLO mode תמיד עם תקרה</span></div>
+  </section>
+
+  <section class="budget" aria-labelledby="sa">
+    <div class="stitle" style="padding-top:0"><h2 id="sa">🎚️ מצבי Auto מול Claude Code</h2></div>
+    <div class="am">
+      <div class="ar ah"><span class="tag t-gh">Copilot Auto</span><span>מה הוא עושה</span><span class="tag t-cc">Claude Code, הכי קרוב</span></div>
+      <div class="ar"><span class="an"><i class="dot" style="--r:var(--safe)"></i>Efficiency</span><span class="ad">מעדיף מודל זול</span><span class="ac"><code>haiku</code> או <code>sonnet</code> + <code>/effort low</code></span></div>
+      <div class="ar"><span class="an"><i class="dot" style="--r:var(--mid)"></i>Balance</span><span class="ad">מאזן עלות ואיכות</span><span class="ac"><code>sonnet</code> + <code>medium</code> (ברירת מחדל)</span></div>
+      <div class="ar"><span class="an"><i class="dot" style="--r:var(--risk)"></i>Intelligence</span><span class="ad">מעדיף מודל חזק</span><span class="ac"><code>opus</code> + <code>high</code></span></div>
+      <div class="ar"><span class="an">🐉 HydraFusion</span><span class="ad">כמה מודלים על אותה משימה</span><span class="ac"><code>opusplan</code> · Advisor</span></div>
+    </div>
+    <div class="match"><span>Copilot: מודל נבחר לכל בקשה, מאותו מאגר, 10% הנחה</span><span>Claude: מודל קבוע עד שמחליפים</span></div>
+    <div class="warn">🧪<span>אותו פרומפט, קרדיטים: <span class="ltr">Efficiency 0.88 · Balance 2.01 · Intelligence 4.29</span>. התשובה הטובה ביותר הגיעה מ־Efficiency.</span></div>
+  </section>
+
+  <section class="budget" aria-labelledby="sm">
+    <div class="stitle" style="padding-top:0"><h2 id="sm">🧩 המודלים לפי בנצ'מרק</h2></div>
+    <div class="legend"><span><i class="vd gh"></i>OpenAI</span><span><i class="vd cc"></i>Anthropic</span><span>Terminal-Bench 2.1 · ציר מ־50%</span></div>
+    <div class="bars" role="table">
+      <div class="br bh" role="row"><span>מודל</span><span>ציון</span><span>💵 קלט / פלט</span><span>💾 מטמון</span></div>
+      <div class="br " role="row"><span class="bm"><i class="vd cc"></i>Claude Opus 5.5</span><span class="bt"><span class="bf cc" style="width:94.1%"></span><b>87.6%</b></span><span class="bp">$4 / $20</span><span class="bc">$0.20</span></div>
+<div class="br " role="row"><span class="bm"><i class="vd gh"></i>GPT-6 Astra</span><span class="bt"><span class="bf gh" style="width:93.2%"></span><b>87.3%</b></span><span class="bp">$10 / $50</span><span class="bc">$1.00</span></div>
+<div class="br " role="row"><span class="bm"><i class="vd gh"></i>GPT-5.6 Sol</span><span class="bt"><span class="bf gh" style="width:89.4%"></span><b>85.8%</b></span><span class="bp">$5 / $30</span><span class="bc">—</span></div>
+<div class="br na" role="row"><span class="bm"><i class="vd cc"></i>Claude Fable 5.1 <small class="nat">לא זמין</small></span><span class="bt"><span class="bf cc" style="width:87.5%"></span><b>85.0%</b></span><span class="bp">$10 / $50</span><span class="bc">$0.25</span></div>
+<div class="br luna" role="row"><span class="bm"><i class="vd cc"></i>Claude Sonnet 5.5</span><span class="bt"><span class="bf cc" style="width:82.9%"></span><b>83.2%</b></span><span class="bp">$2 / $10</span><span class="bc">$0.10</span></div>
+<div class="br " role="row"><span class="bm"><i class="vd gh"></i>GPT-5.6 Terra</span><span class="bt"><span class="bf gh" style="width:68.8%"></span><b>77.5%</b></span><span class="bp">$2.50 / $15</span><span class="bc">—</span></div>
+<div class="br luna" role="row"><span class="bm"><i class="vd gh"></i>GPT-6 Luna</span><span class="bt"><span class="bf gh" style="width:57.6%"></span><b>73.0%</b></span><span class="bp">$0.10 / $0.50</span><span class="bc">$0.01</span></div>
+<div class="br " role="row"><span class="bm"><i class="vd gh"></i>GPT-5.4 mini</span><span class="bt"><span class="bf gh" style="width:11.7%"></span><b>54.7%</b></span><span class="bp">—</span><span class="bc">—</span></div>
+<div class="br bh sep" role="row"><span>לא נמדדו בבנצ'מרק</span><span></span><span></span><span></span></div>
+<div class="br " role="row"><span class="bm"><i class="vd gh"></i>GPT-6.1 Sol</span><span class="bt nb"><b>—</b></span><span class="bp">$2 / $10</span><span class="bc">$0.10</span></div>
+<div class="br " role="row"><span class="bm"><i class="vd gh"></i>GPT-5.3-Codex</span><span class="bt nb"><b>—</b></span><span class="bp">—</span><span class="bc">—</span></div>
+<div class="br " role="row"><span class="bm"><i class="vd cc"></i>Claude Haiku 5.5</span><span class="bt nb"><b>—</b></span><span class="bp">—</span><span class="bc">—</span></div>
+<div class="br na" role="row"><span class="bm"><i class="vd gh"></i>Daybreak (GPT-5.6 Cyber) <small class="nat">לא זמין</small></span><span class="bt nb"><b>—</b></span><span class="bp">$12.50 / $75</span><span class="bc">—</span></div>
+<div class="br na" role="row"><span class="bm"><i class="vd cc"></i>Claude Mythos 5.1 <small class="nat">לא זמין</small></span><span class="bt nb"><b>—</b></span><span class="bp">—</span><span class="bc">—</span></div>
+    </div>
+    <div class="warn">💾<span><b>GPT-6 Luna</b> ו־<b>Claude Sonnet 5.5</b>: מטמון ב־$0.01 וב־$0.10 למיליון טוקנים. בסשן ארוך עם הרבה הקשר חוזר, זה ההבדל הגדול.</span></div>
+    <div class="match"><span>Opus 5.5 ≈ Astra</span><span>Sonnet 5.5 ≈ GPT-6.1 Sol</span><span>Haiku 5.5 ≈ Luna 6</span></div>
+    <p class="fine">מחירים: דולר למיליון טוקנים. Daybreak ו־Mythos: מודלי אבטחה בגישה מוגבלת.</p>
+  </section>
+
+  <footer>
+    <span>נכון לאוקטובר 2026</span>
+    <span>מקורות: <a href="https://code.claude.com/docs/en/permission-modes">Claude Code · Permission modes</a> · <a href="https://code.claude.com/docs/en/model-config">Claude Code · Model configuration</a> · <a href="https://code.claude.com/docs/en/headless">Claude Code · Run programmatically</a> · <a href="https://developers.openai.com/api/docs/models">OpenAI · Models</a> · <a href="https://claudefa.st/blog/models/gpt-5-6">GPT-5.6 pricing</a> · <a href="https://www.vals.ai/benchmarks/terminal-bench-2-1">Vals · Terminal-Bench 2.1</a> · <a href="https://benchlm.ai/anthropic/api-pricing">Claude API pricing</a> · <a href="https://developers.openai.com/api/docs/pricing">OpenAI pricing</a> · <a href="https://docs.github.com/en/copilot/reference/ai-models/model-comparison">GitHub · Model comparison</a> · <a href="https://visualstudiomagazine.com/articles/2026/09/15/hands-on-with-github-copilots-new-cost-vs-quality-auto-model-tiers.aspx">VS Magazine · Auto tiers</a> · <a href="https://code.visualstudio.com/docs/copilot/customization/language-models">VS Code · Language models</a></span>
+  </footer>
+</div>
+</body></html>
