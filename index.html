@@ -252,7 +252,7 @@ const L={
  debug:["Debug view docs","https://code.visualstudio.com/learn/foundations/debugging-and-whats-happening-behind-the-scenes"],
  rulesets:["Rulesets","https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets"],
  gpt6:["GPT-6 Luna and Sol","https://github.blog/changelog/2026-09-22-openais-gpt-6-sol-and-gpt-6-luna-now-available/"],
- hydra:["HydraFusion overview","https://www.marktechpost.com/2026/09/05/github-introduces-project-hydrafusion-runtime-multi-model-orchestration-that-builds-a-workflow-per-coding-task-in-copilot-cli/"]
+ hydra:["Copilot Fusion docs","https://docs.github.com/copilot/concepts/models/copilot-fusion"]
 };
 const REL={do:"Practice",tool:"Tool",check:"Gate",data:"Real data"};
 const PH={p1:"🧭 Before you start",p2:"⚙️ During the task",p3:"✅ Before you merge",p4:"🔁 After, and ongoing"};
@@ -326,9 +326,9 @@ const TREE=N("core","Token-smart GitHub Copilot",{d:"Spend tokens where they buy
     ["at","Repo, then VS Code chat"],["when","The second time a task repeats"],
     ["step",[["file",".github/prompts/unit-tests.prompt.md"],["code","---\nagent: agent\nmodel: <cheapest model that passed>\ntools: ['search/codebase']\n---\nWrite unit tests for ${file}."]]],
     ["step",[["txt","Run it in chat"],["cmd","/unit-tests",">"]]]]}),
-  N("s33","⚡ One-off: start low, escalate on a signal",{key:1,r:"do",d:"Start with Auto or a light tier. Escalate on evidence: tests still failing, wrong files touched, a plan that contradicts the code.",how:[
+  N("s33","⚡ One-off: start low, escalate on a signal",{key:1,r:"do",d:"Start with Copilot Fusion Standard or a light tier. Escalate on evidence: tests still failing, wrong files touched, a plan that contradicts the code.",how:[
     ["at","Chat model picker"],["when","Task start"],
-    ["txt","Pick Auto or a light tier (e.g. GPT-6 Luna), then tell it when to stop:"],
+    ["txt","Pick Copilot Fusion Standard or a light tier (e.g. GPT-6 Luna), then tell it when to stop:"],
     ["say","If the tests still fail after 2 attempts, stop and summarise the failure."]]}),
   N("s34","🧪 Verifiability sets the floor",{r:"do",d:"Verifiable work goes to a cheaper model with tests as the judge. Hard-to-verify work (design, security, concurrency) gets a stronger model or a reviewer.",j:["s43"],how:[
     ["li","Verifiable → cheapest tier that passes the tests"],
@@ -340,15 +340,15 @@ const TREE=N("core","Token-smart GitHub Copilot",{d:"Spend tokens where they buy
     ["code","Escalate the model at most once per task.\nIf the top tier fails twice, propose a task breakdown."]]})
  ]),
 
- N("s4","🐉 Orchestrate: cascade and critique",{ph:"p2",tone:"shared",d:"Switch models between stages, with a small context per stage. HydraFusion does it for you in Copilot CLI.",L:["hydra"]},[
+ N("s4","🐉 Orchestrate: cascade and critique",{ph:"p2",tone:"shared",d:"Switch models between stages, with a small context per stage. Copilot Fusion at High or Max does it for you.",L:["hydra"]},[
   N("s41","🗺️ Plan expensive, execute cheap",{key:1,r:"do",d:"A strong model writes a short plan with acceptance criteria. A light model executes it. The plan is the contract.",how:[
     ["when","Any change bigger than one file"],
     ["step",[["txt","Chat 1 · strong model"],["say","Write plan.md: files, steps, acceptance criteria. No code."]]],
     ["step",[["txt","Chat 2 · light model, e.g. GPT-6 Luna (new chat)"],["say","Implement plan.md step 1, then run the tests."]]]]}),
-  N("s42","🐉 HydraFusion in Copilot CLI",{r:"tool",d:"Research preview. Per task it picks Single, Cascade (cheap draft, gate, escalate) or Critique (a reviewer from another model family). You pay for each model's tokens.",L:["hydra"],how:[
+  N("s42","🐉 Copilot Fusion: High or Max",{r:"tool",d:"Generally available; it replaced Auto and HydraFusion. Standard picks one model per task. High and Max can also pick Cascade (cheap draft, gate, escalate) or Critique (a reviewer from another model family). You pay for each model's tokens.",L:["hydra"],how:[
     ["at","Terminal · Copilot CLI"],["when","Once, to turn it on"],
     ["cmd","copilot","$"],
-    ["cmd","/update\n/experimental on\n/model        # pick HydraFusion",">"]]}),
+    ["cmd","/model        # pick Copilot Fusion, then High or Max",">"]]}),
   N("s43","👀 Critique across families",{r:"do",d:"A reviewer from another model family catches what the author model misses. It reads the diff, not the whole conversation.",L:["agents"],how:[
     ["at","Repo, then VS Code chat"],["when","Before you open the PR"],
     ["step",[["file",".github/agents/reviewer.agent.md"],["code","---\nname: Reviewer\nmodel: <a model from another family>\ntools: ['search/codebase']\n---\nReview the diff for correctness and risk."]]],
@@ -407,7 +407,7 @@ const TREE=N("core","Token-smart GitHub Copilot",{d:"Spend tokens where they buy
     ["cmd","copilot --resume","$"]]}),
   N("s72","💸 Find where tokens went",{key:1,r:"tool",d:"Sessions and patterns that burned the most tokens.",how:[
     ["at","Copilot CLI"],["when","Weekly"],
-    ["cmd","/chronicle cost tips",">"]]}),
+    ["cmd","/chronicle cost-tips",">"]]}),
   N("s73","🛠️ Turn repeats into instructions",{r:"tool",d:"Chronicle spots context you keep re-explaining. Land the fix as a reviewed PR, not a local tweak.",how:[
     ["at","Copilot CLI, then GitHub"],["when","Monthly"],
     ["step",[["cmd","/chronicle improve",">"]]],
@@ -610,7 +610,7 @@ function search(term){
 q.addEventListener("input",()=>search(q.value));
 q.addEventListener("keydown",e=>{ if(e.key==="Enter"&&hits.length){ hi=(hi+1)%hits.length; qInfo.textContent=`${hi+1} / ${hits.length}`; jump(hits[hi].id); } });
 const quick=document.getElementById("quick");
-["cache","prompt.md","/chronicle","HydraFusion","golden"].forEach(t=>{
+["cache","prompt.md","/chronicle","Fusion","golden"].forEach(t=>{
   const b=document.createElement("button"); b.type="button"; b.className="chip"; b.textContent=t;
   b.addEventListener("click",()=>{ q.value=t; search(t); }); quick.appendChild(b);
 });
